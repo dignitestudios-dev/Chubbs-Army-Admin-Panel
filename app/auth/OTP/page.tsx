@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,8 +12,15 @@ import { getErrorMessage } from "@/init/appValues";
 const OTPVerification = () => {
   const router = useRouter();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const email = localStorage.getItem("forgotEmail") || "";
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("forgotEmail");
+    if (storedEmail) {
+      setEmail(storedEmail);
+    }
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>,
