@@ -9,54 +9,147 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-interface Product {
-  id: number;
-  title: string;
-  description: string;
-  pickupLocation: string;
-  quantity: number;
-  availableDays: string;
-  pickupTime: string;
-  image: string;
+interface ProductData {
+  id: string;
+  name: string;
+  price: number;
+  stock: number;
+  images: string[];
+  category: string;
+  averageRating: number;
+  reviewCount: number;
+  createdAt: string;
+  owner: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    BusinessProfile: Array<{
+      businessName: string;
+      businessEmail: string;
+      businessPhoneNumber: string;
+    }>;
+  };
 }
+
+interface ServiceData {
+  id: string;
+  name: string;
+  category: string;
+  petType: string;
+  pricePerHour: string;
+  images: string[];
+  reviewCount: number;
+  averageRating: number;
+  createdAt: string;
+  owner: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    BusinessProfile: Array<{
+      businessName: string;
+      businessEmail: string;
+      businessPhoneNumber: string;
+    }>;
+  };
+}
+
+type Item = ProductData | ServiceData;
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  product: Product | null;
+  item: Item | null;
+  type: "product" | "service";
 }
 
 export default function ProductDetailsModal({
   isOpen,
   onClose,
-  product,
+  item,
+  type,
 }: Props) {
-  if (!product) return null;
+  if (!item) return null;
+
+  const isProduct = type === "product";
+  const isService = type === "service";
+
+  const title = isProduct
+    ? (item as ProductData).name
+    : (item as ServiceData).name;
+  const image = isProduct
+    ? (item as ProductData).images[0]
+    : (item as ServiceData).images[0];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{product.title}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="h-48 overflow-hidden rounded">
             <img
-              src={product.image}
-              alt={product.title}
+              src={image}
+              alt={title}
               className="w-full h-full object-cover"
             />
           </div>
 
-          <p className="text-sm text-muted-foreground">{product.description}</p>
+          {isProduct && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Business:{" "}
+                {(item as ProductData).owner.BusinessProfile[0]?.businessName ||
+                  "N/A"}
+              </p>
 
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <Detail label="Pickup Location" value={product.pickupLocation} />
-            <Detail label="Quantity" value={product.quantity} />
-            <Detail label="Available Days" value={product.availableDays} />
-            <Detail label="Pickup & Drop-off" value={product.pickupTime} />
-          </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <Detail
+                  label="Category"
+                  value={(item as ProductData).category}
+                />
+                <Detail
+                  label="Price"
+                  value={`$${(item as ProductData).price.toFixed(2)}`}
+                />
+                <Detail label="Stock" value={(item as ProductData).stock} />
+                <Detail
+                  label="Rating"
+                  value={`${(item as ProductData).averageRating} (${(item as ProductData).reviewCount} reviews)`}
+                />
+              </div>
+            </>
+          )}
+
+          {isService && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Business:{" "}
+                {(item as ServiceData).owner.BusinessProfile[0]?.businessName ||
+                  "N/A"}
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <Detail
+                  label="Category"
+                  value={(item as ServiceData).category}
+                />
+                <Detail
+                  label="Pet Type"
+                  value={(item as ServiceData).petType}
+                />
+                <Detail
+                  label="Price per Hour"
+                  value={`$${(item as ServiceData).pricePerHour}`}
+                />
+                <Detail
+                  label="Rating"
+                  value={`${(item as ServiceData).averageRating} (${(item as ServiceData).reviewCount} reviews)`}
+                />
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex justify-end gap-2 mt-6">

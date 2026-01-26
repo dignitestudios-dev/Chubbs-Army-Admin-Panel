@@ -9,7 +9,7 @@ import { CardContent } from "@/components/ui/card";
 import { FileText, Image as ImageIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import axios from "../../../../axios";
-import { ErrorToast } from "@/components/Toaster";
+import { ErrorToast, SuccessToast } from "@/components/Toaster";
 import { AxiosError } from "axios";
 
 const proofDocuments = [
@@ -36,6 +36,7 @@ const proofDocuments = [
 export default function UserDetailPage() {
   const { id } = useParams();
   const [userData, setUserData] = useState(null);
+  const [update, setUpdate] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -59,7 +60,20 @@ export default function UserDetailPage() {
     if (id) {
       fetchUserDetails();
     }
-  }, [id]);
+  }, [id, update]);
+
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const response = await axios.delete(`/admin/users/content/${postId}`);
+      if (response.status === 200) {
+        SuccessToast("Post removed successfully");
+        setUpdate((prev) => !prev);
+      }
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      ErrorToast(err.response?.data?.message ?? "Failed to remove post");
+    }
+  };
 
   // Transform API data to match component expectations
   const transformedUser = userData
@@ -72,13 +86,13 @@ export default function UserDetailPage() {
       }
     : null;
 
-  function FileIcon({ type }: { type: string }) {
-    if (type === "pdf") {
-      return <FileText className="w-5 h-5 text-red-500" />;
-    }
+  // function FileIcon({ type }: { type: string }) {
+  //   if (type === "pdf") {
+  //     return <FileText className="w-5 h-5 text-red-500" />;
+  //   }
 
-    return <ImageIcon className="w-5 h-5 text-blue-500" />;
-  }
+  //   return <ImageIcon className="w-5 h-5 text-blue-500" />;
+  // }
 
   return (
     <div className="p-6 space-y-6">
@@ -91,7 +105,7 @@ export default function UserDetailPage() {
       ) : userData?.role === "SERVICE_PROVIDER" ? (
         <>
           <h1 className="text-2xl font-bold mb-4">Vendor Details</h1>
-          <div className="p-4 rounded-md border mb-2">
+          {/* <div className="p-4 rounded-md border mb-2">
             <p className="text-sm text-muted-foreground">Total Revenue</p>
             <p className="text-xl font-semibold">${3000}</p>
           </div>
@@ -127,12 +141,118 @@ export default function UserDetailPage() {
                 No proof documents uploaded.
               </p>
             )}
-          </div>
+          </div> */}
+
+          {userData?.BusinessProfile?.length > 0 ? (
+            <div className="p-4 rounded-md border mt-2 space-y-3">
+              <p className="text-xl font-semibold">Business Profile</p>
+
+              {userData.BusinessProfile.map((business) => (
+                <div key={business.id} className="space-y-4">
+                  {business.imageUrl && (
+                    <div className="h-48 overflow-hidden rounded">
+                      <img
+                        src={business.imageUrl}
+                        alt={business.businessName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Business Name
+                      </div>
+                      <div className="font-medium">{business.businessName}</div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Business Email
+                      </div>
+                      <div className="font-medium">
+                        {business.businessEmail}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Business Phone
+                      </div>
+                      <div className="font-medium">
+                        {business.businessPhoneNumber}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Experience Years
+                      </div>
+                      <div className="font-medium">
+                        {business.experienceYears}
+                      </div>
+                    </div>
+
+                    <div className="col-span-2">
+                      <div className="text-xs text-muted-foreground">
+                        Location
+                      </div>
+                      <div className="font-medium">{business.location}</div>
+                    </div>
+
+                    <div className="col-span-2">
+                      <div className="text-xs text-muted-foreground">
+                        Description
+                      </div>
+                      <div className="font-medium">{business.description}</div>
+                    </div>
+                  </div>
+
+                  {/* Certifications */}
+                  {business.Certification?.length > 0 && (
+                    <div>
+                      <div className="text-sm font-semibold mb-2">
+                        Certifications
+                      </div>
+
+                      <div className="space-y-2">
+                        {business.Certification.map((cert) => (
+                          <div
+                            key={cert.id}
+                            className="p-3 border rounded space-y-1"
+                          >
+                            <div className="font-medium">
+                              {cert.certificationName}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Institution: {cert.institution}
+                            </div>
+                            <div className="text-sm">
+                              Date of Completion:{" "}
+                              {new Date(
+                                cert.dateOfCompletion,
+                              ).toLocaleDateString()}
+                            </div>
+                            <div className="text-sm">{cert.description}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-4 rounded-md border mt-6 space-y-3">
+              No Detail Provided
+            </div>
+          )}
         </>
       ) : userData?.role === "EVENT_ORGANIZER" ? (
         <>
           <h1 className="text-2xl font-bold mb-4">Event Organizer Details</h1>
-          <div className="p-4 rounded-md border mb-2">
+          {/* <div className="p-4 rounded-md border mb-2">
             <p className="text-sm text-muted-foreground">Total Revenue</p>
             <p className="text-xl font-semibold">${3000}</p>
           </div>
@@ -168,7 +288,113 @@ export default function UserDetailPage() {
                 No proof documents uploaded.
               </p>
             )}
-          </div>
+          </div> */}
+
+          {userData?.BusinessProfile?.length > 0 ? (
+            <div className="p-4 rounded-md border mt-2 space-y-3">
+              <p className="text-xl font-semibold">Business Profile</p>
+
+              {userData.BusinessProfile.map((business) => (
+                <div key={business.id} className="space-y-4">
+                  {business.imageUrl && (
+                    <div className="h-48 overflow-hidden rounded">
+                      <img
+                        src={business.imageUrl}
+                        alt={business.businessName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Business Name
+                      </div>
+                      <div className="font-medium">{business.businessName}</div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Business Email
+                      </div>
+                      <div className="font-medium">
+                        {business.businessEmail}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Business Phone
+                      </div>
+                      <div className="font-medium">
+                        {business.businessPhoneNumber}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        Experience Years
+                      </div>
+                      <div className="font-medium">
+                        {business.experienceYears}
+                      </div>
+                    </div>
+
+                    <div className="col-span-2">
+                      <div className="text-xs text-muted-foreground">
+                        Location
+                      </div>
+                      <div className="font-medium">{business.location}</div>
+                    </div>
+
+                    <div className="col-span-2">
+                      <div className="text-xs text-muted-foreground">
+                        Description
+                      </div>
+                      <div className="font-medium">{business.description}</div>
+                    </div>
+                  </div>
+
+                  {/* Certifications */}
+                  {business.Certification?.length > 0 && (
+                    <div>
+                      <div className="text-sm font-semibold mb-2">
+                        Certifications
+                      </div>
+
+                      <div className="space-y-2">
+                        {business.Certification.map((cert) => (
+                          <div
+                            key={cert.id}
+                            className="p-3 border rounded space-y-1"
+                          >
+                            <div className="font-medium">
+                              {cert.certificationName}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Institution: {cert.institution}
+                            </div>
+                            <div className="text-sm">
+                              Date of Completion:{" "}
+                              {new Date(
+                                cert.dateOfCompletion,
+                              ).toLocaleDateString()}
+                            </div>
+                            <div className="text-sm">{cert.description}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-4 rounded-md border mt-6 space-y-3">
+              No Detail Provided
+            </div>
+          )}
         </>
       ) : (
         <>
@@ -194,7 +420,10 @@ export default function UserDetailPage() {
           <UserPets pets={userData?.petProfiles || []} />
 
           {/* Posts & Engagement */}
-          <UserPosts posts={userData?.posts || []} />
+          <UserPosts
+            posts={userData?.posts || []}
+            onDeletePost={handleDeletePost}
+          />
 
           {/* Admin Actions */}
           <UserAdminActions

@@ -48,9 +48,11 @@ export default function PetManagementPage() {
       const response = await axios.get("/admin/pets", { params });
 
       if (response.status === 200) {
-        setPets(response.data.data);
-        // Assuming no meta, set totalPages to 1 for now
-        setTotalPages(1);
+        const payload: any = response.data?.data;
+        // support multiple API shapes: { pets: [...] }, { data: [...] }, or direct array
+        const items = payload?.pets ?? payload?.data ?? payload;
+        setPets(items);
+        setTotalPages(payload?.meta?.totalPages ?? 1);
       }
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;

@@ -16,7 +16,6 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { QuickAction } from "./dashboardcomponent/QuickAction";
 
 const Dashboard = () => {
@@ -115,12 +114,7 @@ const Dashboard = () => {
           <h1 className="mb-0 text-muted-foreground font-medium">Charts</h1>
           <div className="grid grid-cols-2 space-x-4 ">
             <ChartAreaStacked statsData={statsData} />
-            <ChartBarMultiple
-              statsData={statsData}
-              fromDate={fromDate}
-              toDate={toDate}
-              range={range}
-            />
+            <ChartBarMultiple statsData={statsData} />
           </div>
         </>
       )}

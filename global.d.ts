@@ -1,4 +1,5 @@
 export {};
+import { LucideIcon } from "lucide-react";
 import { QuickAction } from "./app/dashboard/dashboardcomponent/QuickAction";
 
 declare global {
@@ -29,34 +30,69 @@ declare global {
     title: string;
     current: string | number;
     action?: string;
-    icon: any;
+    icon: LucideIcon;
     style: string;
     route: string;
     growth?: number;
   }
 
   interface StatsData {
-    content: {
+    compliance?: {
+      reportedContentCount: number;
+    };
+
+    event?: {
+      pendingEvents: number;
+    };
+
+    content?: {
       totalPosts: number;
     };
-    ecosystem: {
+
+    ecosystem?: {
       activeVendors: number;
       activeServices: number;
       marketplace: number;
     };
-  }
 
-  interface GraphPoint {
-    label: string;
-    value: number;
-  }
-
-  interface StatsData {
     graphs?: {
+      events?: EventGraphPoint[];
       users?: GraphPoint[];
     };
   }
+
+  // interface StatsData {
+  //   content: {
+  //     totalPosts: number;
+  //   };
+  //   ecosystem: {
+  //     activeVendors: number;
+  //     activeServices: number;
+  //     marketplace: number;
+  //   };
+  // }
+
+  interface EventGraphPoint {
+    label: string;
+    attended: number;
+    created: number;
+  }
+
+  interface Graphs {
+    events?: EventGraphPoint[];
+    users?: GraphPoint[];
+  }
+  interface StatsData {
+    graphs?: Graphs;
+  }
   type RangeType = "Weekly" | "Monthly" | "Yearly";
+
+  interface ChartBarMultipleProps {
+    statsData: StatsData | null;
+    fromDate?: string;
+    toDate?: string;
+    range?: string;
+  }
 
   interface MediaItem {
     id: string;
@@ -69,5 +105,23 @@ declare global {
     caption: string;
     thumbnail?: string;
     media: MediaItem[];
+  }
+
+  interface Challenge {
+    id: number | string;
+    title: string;
+    description: string;
+    image: string;
+    duration: string;
+    petsCount: number;
+    createdAt?: string; // optional (ISO date)
+    updatedAt?: string; // optional (ISO date)
+  }
+
+  interface CreateChallengeFormValues {
+    name: string;
+    description: string;
+    endDate: string;
+    image: File | null;
   }
 }

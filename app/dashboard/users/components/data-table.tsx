@@ -1,14 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  ChevronDown,
-  EllipsisVertical,
-  Eye,
-  Pencil,
-  Trash2,
-  Download,
-} from "lucide-react";
+import { Eye } from "lucide-react";
 
 import { formatDate } from "@/lib/utils";
 
@@ -33,9 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { UserFormDialog } from "./user-form-dialog";
 import { useRouter } from "next/navigation";
-import { UserDetailModal } from "../detail/page";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 
 interface User {
@@ -45,24 +35,23 @@ interface User {
   profileUrl: string | null;
   accountStatus: string;
   role: string;
-  // Add other fields as needed
-}
-
-interface UserFormValues {
-  name: string;
-  email: string;
-  role: string;
-  plan: string;
-  billing: string;
   status: string;
+  joinedAt: string;
+  name?: string;
+  plan?: { duration: string }[];
+  numberOfPetProfiles?: number;
+  username?: string;
+  businessName?: string;
+  products?: string; // Add other fields as needed
+  services?: string; // Add other fields as needed
+  approvedEvents?: number; // Add other fields as needed
+  unapprovedEvents?: number;
+  // Add other fields as needed
 }
 
 interface DataTableProps {
   users: User[];
   loading?: boolean;
-  onDeleteUser: (id: number) => void;
-  onEditUser: (user: User) => void;
-  onAddUser: (userData: UserFormValues) => void;
   onFilterChange: (type: string, value: string) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
@@ -186,7 +175,7 @@ export function DataTable({
                  focus:outline-none focus:ring-2 focus:ring-gray-200"
               />
             </div>
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="role-filter" className="text-sm font-medium">
                 Status
               </Label>
@@ -206,7 +195,7 @@ export function DataTable({
                   <SelectItem value="BANNED">Banned</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </div>
           <div className="rounded-md border">
             {loading ? (
@@ -309,7 +298,7 @@ export function DataTable({
                  focus:outline-none focus:ring-2 focus:ring-gray-200"
               />
             </div>
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="role-filter" className="text-sm font-medium">
                 Status
               </Label>
@@ -329,7 +318,7 @@ export function DataTable({
                   <SelectItem value="BANNED">Banned</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </div>
           <div className="rounded-md border">
             {loading ? (
@@ -430,7 +419,7 @@ export function DataTable({
                  focus:outline-none focus:ring-2 focus:ring-gray-200"
               />
             </div>
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="role-filter" className="text-sm font-medium">
                 Status
               </Label>
@@ -450,7 +439,7 @@ export function DataTable({
                   <SelectItem value="BANNED">Banned</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </div>
           <div className="rounded-md border">
             {loading ? (

@@ -1,16 +1,25 @@
 "use client";
 import React, { useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import ProductDetailsModal from "../components/ProductDetailsModal";
 import ServicesDetailsModal from "../../components/ServicesDetailsModal";
 
-interface Service {
+// interface Service {
+//   id: number;
+//   title: string;
+//   description: string;
+//   pickupLocation: string;
+//   quantity: number | string;
+//   availableDays: string;
+//   pickupTime: string;
+//   image: string;
+// }
+
+interface Product {
   id: number;
   title: string;
   description: string;
   pickupLocation: string;
-  quantity: number | string;
+  quantity: number;
   availableDays: string;
   pickupTime: string;
   image: string;
@@ -23,7 +32,7 @@ export default function ServicesPage({
 }) {
   const { storeId } = params;
 
-  const services: Service[] = [
+  const services: Product[] = [
     {
       id: 1,
       title: "Test",
@@ -47,10 +56,10 @@ export default function ServicesPage({
     },
   ];
 
-  const [selectedProduct, setSelectedProduct] = useState<Service | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const openModal = (service: Service) => {
+  const openModal = (service: Product) => {
     setSelectedProduct(service);
     setIsOpen(true);
   };
@@ -120,7 +129,7 @@ export default function ServicesPage({
       <ServicesDetailsModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        services={selectedProduct}
+        product={selectedProduct}
       />
     </div>
   );

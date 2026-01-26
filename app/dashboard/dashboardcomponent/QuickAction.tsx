@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { useState, useMemo } from "react";
 
-export function QuickAction({ statsData }: { statsData: any }) {
+export function QuickAction({ statsData }: { statsData: StatsData | null }) {
   const router = useRouter();
   const [description, setDescription] = useState("");
 
@@ -57,7 +57,7 @@ export function QuickAction({ statsData }: { statsData: any }) {
                       : "border-red-200 bg-red-50 text-red-700",
                   )}
                 >
-                  {metric.growth >= 0 ? (
+                  {/* {metric.growth >= 0 ? (
                     <>
                       <TrendingUp className="me-1 size-3" />
                       {metric.growth >= 0 ? "+" : ""}
@@ -68,7 +68,7 @@ export function QuickAction({ statsData }: { statsData: any }) {
                       <TrendingDown className="me-1 size-3" />
                       {metric.growth}%
                     </>
-                  )}
+                  )} */}
                 </Badge>
               )}
             </div>

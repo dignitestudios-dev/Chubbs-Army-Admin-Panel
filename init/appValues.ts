@@ -12,6 +12,13 @@ export const resetValue = {
   cPassword: "",
 };
 
+export const createChallengeValues = {
+  name: "",
+  description: "",
+  endDate: "",
+  image: null,
+};
+
 export function getErrorMessage(error: any): string {
   return error?.response?.data?.message || "Something went wrong";
 }

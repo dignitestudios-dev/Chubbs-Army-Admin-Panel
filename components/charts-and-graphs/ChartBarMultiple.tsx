@@ -31,7 +31,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function ChartBarMultiple({ statsData }: { statsData: any }) {
+export function ChartBarMultiple({ statsData }: ChartBarMultipleProps) {
   const chartData = useMemo(() => {
     if (!statsData?.graphs?.users) return [];
 
@@ -41,6 +41,7 @@ export function ChartBarMultiple({ statsData }: { statsData: any }) {
       desktop: item.created,
     }));
   }, [statsData]);
+
   return (
     <Card>
       <CardHeader>

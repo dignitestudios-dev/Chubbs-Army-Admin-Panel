@@ -1,19 +1,50 @@
 "use client";
 import { useEffect, useState } from "react";
-import { DataTable } from "../content/components/data-table";
 import { AxiosError } from "axios";
 import { ErrorToast } from "@/components/Toaster";
 import axios from "../../../axios";
+import ReportsTable from "./components/data-table";
+
+interface Pet {
+  id: string;
+  petName: string;
+  profileUrl: string;
+}
+interface PostCount {
+  postreport: number;
+}
+interface PostMedia {
+  uuid: string;
+  fileUrl: string;
+  fileName: string;
+  fileType: string;
+  captionUrl: string | null;
+  thumbnailUrl: string | null;
+}
+
+interface Post {
+  id: string;
+  title: string;
+  description: string | null;
+  media: PostMedia[];
+  mediaType: "Image" | "Video";
+  totalComments: number;
+  totalLikes: number;
+  createdAt: string;
+  type: "Post" | "Reel";
+  _count: PostCount;
+  pet: Pet;
+}
 
 interface ContentData {
-  id: number;
-  creatorName: string;
-  creatorEmail: string;
-  avatar: string;
-  contentType: string;
-  postedOn: string;
-  engagement: string;
-  reports: number;
+  id: string;
+  petId: string;
+  postId: string;
+  reason: string;
+  createdAt: string;
+  updatedAt: string;
+  pet: Pet;
+  post: Post;
 }
 
 export default function ContentPage() {
@@ -49,12 +80,7 @@ export default function ContentPage() {
         Reported Content
       </h1>
       <div className="@container/main px-4 lg:px-6 mt-4 lg:mt-4">
-        <DataTable
-          contentData={content}
-          // onDeleteUser={handleDeleteUser}
-          // onEditUser={handleEditUser}
-          // onAddUser={handleAddUser}
-        />
+        <ReportsTable contentData={content} />
       </div>
     </div>
   );

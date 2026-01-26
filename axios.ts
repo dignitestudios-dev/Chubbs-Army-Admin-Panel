@@ -31,12 +31,11 @@ instance.interceptors.request.use((request) => {
     return Promise.reject(new Error("No internet connection"));
   }
 
-  // Merge existing headers with token
-  request.headers = {
-    ...request.headers, // Keep existing headers like devicemodel and deviceuniqueid
-    Accept: "application/json, text/plain, */*",
-    ...(token && { Authorization: `Bearer ${token}` }), // Add Authorization only if token exists
-  };
+  // Set headers using the set method to avoid type issues
+  request.headers.set("Accept", "application/json, text/plain, */*");
+  if (token) {
+    request.headers.set("Authorization", `Bearer ${token}`);
+  }
 
   return request;
 });

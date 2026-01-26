@@ -6,49 +6,48 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import { ErrorToast } from "@/components/Toaster";
-import axios, { AxiosError } from "axios";
+import { ErrorToast, SuccessToast } from "@/components/Toaster";
+import { AxiosError } from "axios";
+import axios from "@/axios";
 import { useFormik } from "formik";
-import { forgotPasswordSchema } from "@/init/appSchema";
-import { forgotPasswordValue } from "@/init/appValues";
+import { resetPasswordSchema } from "@/init/appSchema";
+import { resetValue } from "@/init/appValues";
 
 const ChangePassword = () => {
+  const router = useRouter();
+  const email = localStorage.getItem("forgotEmail") || "";
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const email = searchParams.get("email");
 
   const [loading, setLoading] = useState(false);
 
   const { values, handleBlur, handleChange, handleSubmit, errors, touched } =
     useFormik({
-      initialValues: forgotPasswordValue,
-      validationSchema: forgotPasswordSchema,
+      initialValues: resetValue,
+      validationSchema: resetPasswordSchema,
       validateOnChange: true,
       validateOnBlur: true,
 
       onSubmit: async (values) => {
-        router.push("/auth/login");
-
         const payload = {
-          email: "admin@yopmail.com",
+          email: email,
+          newPassword: values.password,
         };
 
         try {
           setLoading(true);
 
           const response = await axios.post<SignInResponse>(
-            "/auth/forgot-password",
+            "auth/reset-password",
             payload,
           );
 
           if (response.status === 200) {
-            const data = response.data.data;
+            SuccessToast("Password changed successfully");
 
             // dispatch(login());
-            // router.push("/auth/login");
+            router.push("/auth/login");
           }
         } catch (error) {
           const err = error as AxiosError<{ message: string }>;
@@ -138,8 +137,8 @@ const ChangePassword = () => {
           <p className="text-red-600 text-sm">{errors.cPassword}</p>
         )}
 
-        <Button type="submit" className="w-full">
-          Change Password
+        <Button disabled={loading} type="submit" className="w-full">
+          {loading ? "Changing..." : "Change Password"}
         </Button>
       </form>
     </div>

@@ -1,11 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import MarketplaceTable from "./components/marketplace-table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
+
+import BusinessTable from "./components/business-table";
 import axios from "../../../axios";
 import { ErrorToast } from "@/components/Toaster";
 import { AxiosError } from "axios";
@@ -55,60 +52,76 @@ interface ServiceData {
 }
 
 export default function MarketplacePage() {
+  const [businessData, setBusinessData] = useState<any[]>([]);
+  console.log("🚀 ~ MarketplacePage ~ businessData:", businessData);
   const [products, setProducts] = useState<ProductData[]>([]);
-  const [services, setServices] = useState<ServiceData[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
 
-  const [selectedSection, setSelectedSection] = useState<
-    "listings" | "service"
-  >("listings");
-
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const params: any = {};
-      if (search) params.search = search;
-      const response = await axios.get("/admin/products", { params });
-
-      if (response.status === 200) {
-        setProducts(response.data.data);
-      }
-    } catch (error) {
-      const err = error as AxiosError<{ message: string }>;
-      ErrorToast(err.response?.data?.message ?? "Failed to fetch products");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchServices = async () => {
-    setLoading(true);
-    try {
-      const params: any = {};
-      if (search) params.search = search;
-      const response = await axios.get("/admin/services", { params });
-
-      if (response.status === 200) {
-        setServices(response.data.data);
-      }
-    } catch (error) {
-      const err = error as AxiosError<{ message: string }>;
-      ErrorToast(err.response?.data?.message ?? "Failed to fetch services");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (selectedSection === "listings") {
-      fetchProducts();
-    } else if (selectedSection === "service") {
-      fetchServices();
-    }
-  }, [selectedSection, search]);
+    const businessProfiles = async () => {
+      try {
+        const response = await axios.get("/admin/businesses");
+        if (response.status === 200) {
+          console.log("Business Profiles:", response.data.data);
+          setBusinessData(response.data.data);
+        }
+      } catch (error) {
+        const err = error as AxiosError<{ message: string }>;
+        ErrorToast(
+          err.response?.data?.message ?? "Failed to fetch business profiles",
+        );
+      }
+    };
+    businessProfiles();
+  }, []);
+
+  // const fetchProducts = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const params: any = {};
+  //     if (search) params.search = search;
+  //     const response = await axios.get("/admin/products", { params });
+
+  //     if (response.status === 200) {
+  //       setProducts(response.data.data);
+  //     }
+  //   } catch (error) {
+  //     const err = error as AxiosError<{ message: string }>;
+  //     ErrorToast(err.response?.data?.message ?? "Failed to fetch products");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // const fetchServices = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const params: any = {};
+  //     if (search) params.search = search;
+  //     const response = await axios.get("/admin/services", { params });
+
+  //     if (response.status === 200) {
+  //       setServices(response.data.data);
+  //     }
+  //   } catch (error) {
+  //     const err = error as AxiosError<{ message: string }>;
+  //     ErrorToast(err.response?.data?.message ?? "Failed to fetch services");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   if (selectedSection === "listings") {
+  //     fetchProducts();
+  //   } else if (selectedSection === "service") {
+  //     fetchServices();
+  //   }
+  // }, [selectedSection, search]);
 
   // vendor actions
+
   const approveVendor = (id: number) => alert(`Approve vendor ${id}`);
 
   const rejectVendor = (id: number) => alert(`Reject vendor ${id}`);
@@ -145,35 +158,11 @@ export default function MarketplacePage() {
         </div> */}
       </div>
 
-      <div>
-        <Tabs
-          value={selectedSection}
-          onValueChange={(v) => setSelectedSection(v as any)}
-        >
-          <TabsList>
-            {/* <TabsTrigger value="vendors">Vendors</TabsTrigger> */}
-            <TabsTrigger value="listings">Products</TabsTrigger>
-            <TabsTrigger value="service">Services</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
-      <div className="w-[300px]">
-        <Label htmlFor="search" className="text-sm font-medium">
-          Search
-        </Label>
-        <input
-          id="search"
-          type="text"
-          placeholder="Search by name or email"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md 
-                 focus:outline-none focus:ring-2 focus:ring-gray-200"
-        />
-      </div>
-
       <section className="space-y-3">
+        <BusinessTable businesses={businessData} />
+      </section>
+
+      {/* <section className="space-y-3">
         {selectedSection === "listings" && (
           <>
             <h2 className="text-lg font-semibold">Stores</h2>
@@ -215,7 +204,7 @@ export default function MarketplacePage() {
             />
           </>
         )}
-      </section>
+      </section> */}
     </div>
   );
 }

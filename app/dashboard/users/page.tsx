@@ -5,18 +5,30 @@ import { DataTable } from "./components/data-table";
 import axios from "../../../axios";
 import { ErrorToast } from "@/components/Toaster";
 import { AxiosError } from "axios";
+import { useDebounce } from "@/hooks/use-debounce";
 
-interface User {
+interface UserData {
   id: string;
   firstName: string | null;
   lastName: string | null;
   profileUrl: string | null;
   accountStatus: string;
   role: string;
+  status: string;
+  joinedAt: string;
+  name?: string;
+  plan?: { duration: string }[];
+  numberOfPetProfiles?: number;
+  username?: string;
+  businessName?: string;
+  products?: string; // Add other fields as needed
+  services?: string; // Add other fields as needed
+  approvedEvents?: number; // Add other fields as needed
+  unapprovedEvents?: number;
+  // Add other fields as needed
 }
-
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -25,11 +37,13 @@ export default function UsersPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [activeTab, setActiveTab] = useState("USER");
 
+  const debouncedSearch = useDebounce(search, 500);
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const params: any = { page, limit };
-      if (search) params.search = search;
+      if (debouncedSearch) params.search = debouncedSearch;
       if (status && status !== "all") params.status = status;
       if (activeTab && activeTab !== "USER") {
         params.role = activeTab;
@@ -53,7 +67,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, [search, status, page, limit, activeTab]);
+  }, [debouncedSearch, status, page, limit, activeTab]);
 
   const handleFilterChange = (type: string, value: string) => {
     if (type === "search") setSearch(value);

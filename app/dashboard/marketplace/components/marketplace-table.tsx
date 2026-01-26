@@ -43,6 +43,12 @@ interface Order {
   vendor: string;
   item: string;
   status: "pending" | "fulfilled" | "disputed" | "cancelled";
+  bookingDate: string;
+  location: string;
+  providerName: string;
+  businessName: string;
+  serviceName: string;
+  category: string;
 }
 
 interface Props {

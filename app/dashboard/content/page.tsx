@@ -1,112 +1,109 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DataTable } from "./components/data-table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Award, Plus, Check, X, UploadCloud } from "lucide-react";
-import { Label } from "@/components/ui/label";
+import { Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChallengeViewModal } from "./components/ChallengeViewModal";
+import { CreateChallengeModal } from "./components/CreateChallengeModal";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import axios from "@/axios";
+import { AxiosError } from "axios";
+import { ErrorToast } from "@/components/Toaster";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { EditChallengeModal } from "./components/EditChallengeModal";
 
 type Challenge = {
-  id: number;
-  title: string;
+  id: string;
+  name: string;
   description: string;
   duration: string;
   image: File | null;
   petsCount: number;
-};
-
-const pet = {
-  id: "123",
-  name: "Buddy",
-  species: "Dog",
-  breed: "Labrador",
-  age: 4,
-  ownerName: "Jane Doe",
-  ownerHandle: "jane_d",
+  status: string;
+  createdAt: string;
+  endDate: string;
+  imageUrl: string;
 };
 
 export default function ContentPage() {
-  const [selected, setSelected] = useState<"challenge" | "command ">(
-    "challenge",
+  const [selected, setSelected] = useState<"Challenge" | "command_update">(
+    "Challenge",
   );
-  // const [badges, setBadges] = useState([
-  //   { id: "b1", name: "Friendly", points: 10 },
-  //   { id: "b2", name: "Explorer", points: 50 },
-  // ]);
 
   const [viewModal, setViewModal] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
     null,
   );
-  const [editModal, setEditModal] = useState(false);
-  const [challenges, setChallenges] = useState<Challenge[]>([
-    {
-      id: 1,
-      title: "30-Day Fitness Challenge",
-      description: "Daily activity challenge for pets to stay healthy.",
-      duration: "30 Days",
-      image: null,
-      petsCount: 124,
-    },
-  ]);
+  const [editOpen, setEditOpen] = useState(false);
+  const [createModal, setCreateModal] = useState(false);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
 
-  const [submissions, setSubmissions] = useState([
-    {
-      id: "s1",
-      challengeId: "c1",
-      petId: pet.id,
-      submittedBy: pet.ownerName,
-      status: "pending",
-    },
-  ]);
+  const [loading, setLoading] = useState(false);
+  const [update, setUpdate] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
 
-  function addChallenge(
-    title: string,
-    description: string,
-    duration: string,
-    image: File | null,
-  ) {
-    const newChallenge: Challenge = {
-      id: Date.now(),
-      title,
-      description,
-      duration,
-      image,
-      petsCount: 0,
+  useEffect(() => {
+    const fetchChallenges = async () => {
+      try {
+        setLoading(true);
+        const params: unknown = { page, limit, type: selected };
+        const response = await axios.get(`/challenges/getAllChallenges`, {
+          params,
+        });
+
+        setChallenges(response?.data?.data?.data);
+        setTotalPages(response?.data?.data?.meta?.totalPages ?? 1);
+      } catch (error) {
+        const err = error as AxiosError<{ message: string }>;
+        ErrorToast(err.response?.data?.message ?? "Failed to fetch challenges");
+      } finally {
+        setLoading(false);
+      }
     };
-    setChallenges((prevChallenges) => [...prevChallenges, newChallenge]);
-  }
 
-  function editChallenge(id: number) {
-    const challenge = challenges.find((c) => c.id === id);
-    if (challenge) {
-      setSelectedChallenge(challenge);
-      setEditModal(true);
-      console.log("Edit challenge:", challenge);
+    fetchChallenges();
+  }, [update, selected, page, limit]);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePreviousPage = () => {
+    if (page > 1) {
+      handlePageChange(page - 1);
     }
-  }
+  };
 
-  function updateChallenge(
-    id: number,
-    title: string,
-    description: string,
-    duration: string,
-    image: File | null,
-  ) {
-    setChallenges((prev) =>
-      prev.map((c) =>
-        c.id === id ? { ...c, title, description, duration, image } : c,
-      ),
-    );
-    setEditModal(false);
-    setSelectedChallenge(null);
-  }
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      handlePageChange(page + 1);
+    }
+  };
 
-  function deleteChallenge(id: number) {
+  const handlePageSizeChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
+
+  const onEdit = (id: string) => {
+    const challenge = challenges.find((c) => c.id === id);
+    if (!challenge) return;
+
+    setSelectedChallenge(challenge);
+    setEditOpen(true);
+  };
+
+  function deleteChallenge(id: string) {
     setChallenges((prevChallenges) =>
       prevChallenges.filter((challenge) => challenge.id !== id),
     );
@@ -117,370 +114,298 @@ export default function ContentPage() {
     setViewModal(true);
   };
 
-  // function addBadge(name: string, points: number) {
-  //   setBadges((b) => [...b, { id: `b${Date.now()}`, name, points }]);
-  // }
-
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-muted-foreground text-[22px] font-bold">
         Content Management
       </h1>
-      <Tabs value={selected} onValueChange={(v) => setSelected(v as any)}>
-        <TabsList>
-          <TabsTrigger value="challenge">Challenges</TabsTrigger>
-          <TabsTrigger value="command">Command Update</TabsTrigger>
-          {/* <TabsTrigger value="refunds">Refunds & Disputes</TabsTrigger> */}
-        </TabsList>
-      </Tabs>
-      {/* <Card>
-        <CardContent>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold">Rank & Badge Control</h2>
-            <div className="text-sm text-muted-foreground">
-              Manage ranks, badges & thresholds
-            </div>
-          </div>
-          <div className="space-y-3">
-            <AddBadgeForm onAdd={(name, points) => addBadge(name, points)} />
-            <div className="space-y-2">
-              <h3 className="font-medium">Badges</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {badges.map((b) => (
-                  <div
-                    key={b.id}
-                    className="flex items-center justify-between border rounded p-2"
-                  >
-                    <div>
-                      <div className="font-medium">{b.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Points: {b.points}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card> */}
-      {selected === "challenge" ? (
-        <Card>
-          <CardContent>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold">Upload Challenges</h2>
-              <div className="text-sm text-muted-foreground">
-                Create and manage challenges
-              </div>
-            </div>
-            <div className="space-y-3">
-              {/* <AddBadgeForm onAdd={(name, points) => addBadge(name, points)} /> */}
-              <AddChallengeForm
-                onAdd={(title, description, duration, image) =>
-                  addChallenge(title, description, duration, image)
-                }
-                initial={null}
-              />
-              <div>
-                <h3 className="font-medium mb-2">Challenges</h3>
 
-                {challenges.map((c) => (
-                  <div
-                    key={c.id}
-                    className="border rounded-md p-3 mb-2 flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-medium">{c.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {c.duration} • {c.petsCount} pets involved
-                      </p>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => openViewModal(c)}
-                      >
-                        View
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => editChallenge(c.id)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => deleteChallenge(c.id)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {loading ? (
+        <div>Loading challenges...</div>
       ) : (
-        <Card>
-          <CardContent>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold">Upload Command Update</h2>
-              <div className="text-sm text-muted-foreground">
-                Create and manage command updates
-              </div>
-            </div>
-            <div className="space-y-3">
-              {/* <AddBadgeForm onAdd={(name, points) => addBadge(name, points)} /> */}
-              <AddChallengeForm
-                onAdd={(title, description, duration, image) =>
-                  addChallenge(title, description, duration, image)
-                }
-                initial={null}
-              />
-              <div>
-                <h3 className="font-medium mb-2">Command Updates</h3>
-
-                {challenges.map((c) => (
-                  <div
-                    key={c.id}
-                    className="border rounded-md p-3 mb-2 flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-medium">{c.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {c.duration} • {c.petsCount} pets involved
-                      </p>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => openViewModal(c)}
-                      >
-                        View
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => editChallenge(c.id)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => deleteChallenge(c.id)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {viewModal && (
-        <ChallengeViewModal
-          open={viewModal}
-          onClose={() => setViewModal(false)}
-          challenge={selectedChallenge}
-        />
-      )}
-
-      {editModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-popover text-popover-foreground p-6 rounded-md w-full max-w-xl">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold">Edit Challenge</h3>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setEditModal(false);
-                  setSelectedChallenge(null);
-                }}
-              >
-                Close
-              </Button>
-            </div>
-            <AddChallengeForm
-              initial={selectedChallenge}
-              onEdit={(title, description, duration, image) =>
-                selectedChallenge &&
-                updateChallenge(
-                  selectedChallenge.id,
-                  title,
-                  description,
-                  duration,
-                  image,
-                )
+        <>
+          <Tabs
+            value={selected}
+            onValueChange={(v) => {
+              if (v === "Challenge" || v === "command_update") {
+                setSelected(v);
               }
-            />
+            }}
+          >
+            <TabsList>
+              <TabsTrigger value="Challenge">Challenges</TabsTrigger>
+              <TabsTrigger value="command_update">Command Update</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {selected === "Challenge" ? (
+            <Card>
+              <CardContent>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-semibold">Upload Challenges</h2>
+                  <div className="text-sm text-muted-foreground">
+                    Create and manage challenges
+                  </div>
+                </div>
+                <Button onClick={() => setCreateModal(true)}>
+                  <Plus className="size-4 mr-2" />
+                  Create Challenge
+                </Button>
+                <div className="mt-6 space-y-4 overflow-hidden h-[400px]">
+                  <h3 className="font-medium mb-2">Challenges</h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {challenges?.map((c) => (
+                      <div
+                        key={c.id}
+                        className="rounded-lg border bg-white shadow-sm overflow-hidden flex flex-col"
+                      >
+                        {/* Image */}
+                        <div className="h-40 overflow-hidden">
+                          <img
+                            src={c.imageUrl}
+                            alt={c.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-4 flex flex-col flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <h3 className="font-semibold text-lg line-clamp-1">
+                              {c.name}
+                            </h3>
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full ${
+                                c.status === "Active"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {c.status}
+                            </span>
+                          </div>
+
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                            {c.description}
+                          </p>
+
+                          {/* Dates */}
+                          <div className="text-xs text-muted-foreground space-y-1 mb-4">
+                            <div>
+                              <span className="font-medium">Start:</span>{" "}
+                              {new Date(c.createdAt).toLocaleDateString()}
+                            </div>
+                            <div>
+                              <span className="font-medium">End:</span>{" "}
+                              {new Date(c.endDate).toLocaleDateString()}
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="mt-auto flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => onEdit(c.id)}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => deleteChallenge(c.id)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <CreateChallengeModal
+                  open={createModal}
+                  onClose={() => setCreateModal(false)}
+                  challenges={challenges}
+                  selectedTab={selected}
+                  onSuccess={() => setUpdate((prev) => !prev)}
+                />
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-semibold">
+                    Upload Command Update
+                  </h2>
+                  <div className="text-sm text-muted-foreground">
+                    Create and manage command updates
+                  </div>
+                </div>
+
+                <Button onClick={() => setCreateModal(true)}>
+                  <Plus className="size-4 mr-2" />
+                  Create Command Update
+                </Button>
+                <div className="mt-6 space-y-4 overflow-hidden h-[400px]">
+                  <h3 className="font-medium mb-2">Challenges</h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {challenges?.map((c) => (
+                      <div
+                        key={c.id}
+                        className="rounded-lg border bg-white shadow-sm overflow-hidden flex flex-col"
+                      >
+                        {/* Image */}
+                        <div className="h-40 overflow-hidden">
+                          <img
+                            src={c.imageUrl}
+                            alt={c.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-4 flex flex-col flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <h3 className="font-semibold text-lg line-clamp-1">
+                              {c.name}
+                            </h3>
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded-full ${
+                                c.status === "Active"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {c.status}
+                            </span>
+                          </div>
+
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                            {c.description}
+                          </p>
+
+                          {/* Dates */}
+                          <div className="text-xs text-muted-foreground space-y-1 mb-4">
+                            <div>
+                              <span className="font-medium">Start:</span>{" "}
+                              {new Date(c.createdAt).toLocaleDateString()}
+                            </div>
+                            <div>
+                              <span className="font-medium">End:</span>{" "}
+                              {new Date(c.endDate).toLocaleDateString()}
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="mt-auto flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => onEdit(c.id)}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => deleteChallenge(c.id)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <CreateChallengeModal
+                  open={createModal}
+                  onClose={() => setCreateModal(false)}
+                  challenges={challenges}
+                  selectedTab={selected}
+                  onSuccess={() => setUpdate((prev) => !prev)}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          <div className="flex items-center justify-between space-x-2 py-4">
+            <div className="flex items-center space-x-2">
+              <Label htmlFor="page-size" className="text-sm font-medium">
+                Show
+              </Label>
+              <Select
+                value={limit.toString()}
+                // onValueChange={handlePageSizeChange}
+              >
+                <SelectTrigger className="w-20 cursor-pointer" id="page-size">
+                  <SelectValue placeholder={limit.toString()} />
+                </SelectTrigger>
+                <SelectContent side="top">
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="12">12</SelectItem>
+                  <SelectItem value="30">30</SelectItem>
+                  <SelectItem value="40">40</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center space-x-6 lg:space-x-8">
+              <div className="hidden sm:flex items-center space-x-2">
+                <p className="text-sm font-medium">Page</p>
+                <strong className="text-sm">
+                  {page} of {totalPages}
+                </strong>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePreviousPage}
+                  disabled={page <= 1}
+                  className="cursor-pointer"
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextPage}
+                  disabled={page >= totalPages}
+                  className="cursor-pointer"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
+
+          {editOpen && (
+            <EditChallengeModal
+              open={editOpen}
+              challenge={selectedChallenge}
+              onClose={() => {
+                setEditOpen(false);
+                setSelectedChallenge(null);
+              }}
+              onSuccess={() => setUpdate((prev) => !prev)}
+            />
+          )}
+
+          {/* {viewModal && (
+            <ChallengeViewModal
+              open={viewModal}
+              onClose={() => setViewModal(false)}
+              challenge={selectedChallenge}
+            />
+          )} */}
+        </>
       )}
     </div>
   );
-
-  function AddChallengeForm({
-    onAdd,
-    initial,
-    onEdit,
-  }: {
-    onAdd?: (
-      title: string,
-      description: string,
-      duration: string,
-      image: File | null,
-    ) => void;
-    onEdit?: (
-      title: string,
-      description: string,
-      duration: string,
-      image: File | null,
-    ) => void;
-    initial?: Challenge | null;
-  }) {
-    const [title, setTitle] = useState("");
-    const [duration, setDuration] = useState("");
-    const [description, setDescription] = useState("");
-    const [image, setImage] = useState<File | null>(null);
-    const [preview, setPreview] = useState<string | null>(null);
-
-    useEffect(() => {
-      if (initial) {
-        setTitle(initial.title ?? "");
-        setDuration(initial.duration ?? "");
-        setDescription(initial.description ?? "");
-        setImage(initial.image ?? null);
-        setPreview(initial.image ? URL.createObjectURL(initial.image) : null);
-      } else {
-        setTitle("");
-        setDuration("");
-        setDescription("");
-        setImage(null);
-        setPreview(null);
-      }
-    }, [initial]);
-
-    const handleSubmit = () => {
-      if (!title || !duration || !description) return;
-      if (initial && onEdit) {
-        onEdit(title, description, duration, image);
-      } else if (onAdd) {
-        onAdd(title, description, duration, image);
-      }
-      setTitle("");
-      setDuration("");
-      setDescription("");
-      setImage(null);
-      setPreview(null);
-    };
-
-    return (
-      <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-2">
-          <Input
-            placeholder="Challenge Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <Input
-            placeholder="Duration (e.g. 30 Days)"
-            value={duration}
-            onChange={(e) => setDuration(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Challenge Image</label>
-
-          <div className="relative">
-            <input
-              type="file"
-              accept="image/png,image/jpeg,image/jpg"
-              className="absolute inset-0 opacity-0 cursor-pointer"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-
-                setImage(file);
-                setPreview(URL.createObjectURL(file));
-              }}
-            />
-
-            <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-md p-6 text-center cursor-pointer hover:bg-muted transition">
-              <UploadCloud className="w-8 h-8 text-muted-foreground mb-2" />
-              <p className="text-sm font-medium">Click to upload image</p>
-              <p className="text-xs text-muted-foreground">
-                PNG, JPG up to 5MB
-              </p>
-            </div>
-          </div>
-
-          {preview && (
-            <img
-              src={preview}
-              alt="Preview"
-              className="h-32 w-full object-cover rounded-md border"
-            />
-          )}
-        </div>
-
-        <Input
-          placeholder="Challenge Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-
-        <Button onClick={handleSubmit}>
-          <Plus className="size-4 mr-1" />
-          {initial ? "Update Challenge" : "Create Challenge"}
-        </Button>
-      </div>
-    );
-  }
-
-  // function AddBadgeForm({
-  //   onAdd,
-  // }: {
-  //   onAdd: (name: string, points: number) => void;
-  // }) {
-  //   const [name, setName] = useState("");
-  //   const [points, setPoints] = useState(0);
-  //   return (
-  //     <div className="flex items-center gap-2">
-  //       <Input
-  //         placeholder="Badge name"
-  //         value={name}
-  //         onChange={(e) => setName(e.target.value)}
-  //       />
-  //       <Input
-  //         type="number"
-  //         placeholder="Points"
-  //         value={points}
-  //         onChange={(e) => setPoints(Number(e.target.value))}
-  //       />
-  //       <Button
-  //         onClick={() => {
-  //           if (name) {
-  //             onAdd(name, points);
-  //             setName("");
-  //             setPoints(0);
-  //           }
-  //         }}
-  //       >
-  //         <Award className="size-4" /> Add
-  //       </Button>
-  //     </div>
-  //   );
-  // }
 }

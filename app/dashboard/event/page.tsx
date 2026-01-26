@@ -19,6 +19,19 @@ interface EventData {
     firstName: string;
     lastName: string;
   };
+  date?: string; // ✅ optional now
+  location?: string;
+    rsvps?: number;
+    currentRSVP?: number;
+  ticketsSold?: number;
+  attendance?: number;
+  reports?: number;
+  ratingAvg?: number;
+  feedbackCount?: number;
+  
+
+  
+  
 }
 
 export default function EventPage() {
@@ -46,7 +59,7 @@ export default function EventPage() {
   const fetchEvents = async (status: string) => {
     setLoading(true);
     try {
-      const params: any = { status };
+      const params: unknown = { status };
       const response = await axios.get("/admin/events", { params });
 
       if (response.status === 200) {
@@ -108,7 +121,11 @@ export default function EventPage() {
       <div>
         <Tabs
           value={selectedSection}
-          onValueChange={(v) => setSelectedSection(v as any)}
+          onValueChange={(v) => {
+    if (v === "approval" || v === "monitoring" || v === "post") {
+      setSelectedSection(v);
+    }
+  }}
         >
           <TabsList>
             <TabsTrigger value="approval">Event Approval</TabsTrigger>
@@ -127,13 +144,13 @@ export default function EventPage() {
               events={events.map((e) => ({
                 id: parseInt(e.id),
                 title: e.title,
-                organizer: `${e.organizer.firstName} ${e.organizer.lastName}`,
-                date: new Date(e.eventDate).toISOString().split("T")[0],
-                location: e.placeName,
+                organizer: `${e?.organizer?.firstName} ${e?.organizer?.lastName}`,
+                // date: new Date(e?.eventDate)?.toISOString()?.split("T")[0],
+                location: e?.placeName,
                 status:
-                  e.status === "DRAFT"
+                  e?.status === "DRAFT"
                     ? "submitted"
-                    : e.status === "ACTIVE"
+                    : e?.status === "ACTIVE"
                       ? "approved"
                       : "rejected",
                 rsvps: 0, // not in data
@@ -160,15 +177,8 @@ export default function EventPage() {
                 id: parseInt(e.id),
                 title: e.title,
                 organizer: `${e.organizer.firstName} ${e.organizer.lastName}`,
-                date: new Date(e.eventDate).toISOString().split("T")[0],
-                location: e.placeName,
-                status:
-                  e.status === "DRAFT"
-                    ? "submitted"
-                    : e.status === "ACTIVE"
-                      ? "approved"
-                      : "rejected",
-                rsvps: 0,
+                status: "approved",
+                rsvps: e?.currentRSVP,
                 ticketsSold: 0,
                 attendance: 0,
                 reports: 0,

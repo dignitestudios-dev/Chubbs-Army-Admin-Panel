@@ -37,9 +37,10 @@ const ForgetPassword = () => {
           );
 
           if (response.status === 200) {
-            const data = response.data.data;
+            console.log("response data-- ", response.data);
             SuccessToast("OTP sent to your email");
             // dispatch(login());
+            localStorage.setItem("forgotEmail", values.email);
             router.push("/auth/OTP");
           }
         } catch (error) {

@@ -78,3 +78,33 @@ export const resetPasswordSchema = Yup.object({
     .required("Please confirm your password")
     .oneOf([Yup.ref("password")], "Password does not match"),
 });
+
+export const createChallengeSchema = Yup.object({
+  name: Yup.string()
+    .required("Challenge name is required")
+    .min(3, "Name must be at least 3 characters")
+    .max(100, "Name must be less than 100 characters"),
+
+  description: Yup.string()
+    .required("Description is required")
+    .min(10, "Description must be at least 10 characters")
+    .max(1000, "Description must be less than 1000 characters"),
+
+  endDate: Yup.date()
+    .required("End date is required")
+    .min(new Date(), "End date must be in the future"),
+
+  image: Yup.mixed<File>()
+    .required("Image is required")
+    .test("fileSize", "File size is too large", (value) => {
+      if (!value) return false;
+      return value instanceof File && value.size <= 5 * 1024 * 1024; // 5MB
+    })
+    .test("fileType", "Unsupported file format", (value) => {
+      if (!value) return false;
+      return (
+        value instanceof File &&
+        ["image/jpeg", "image/png"].includes(value.type)
+      );
+    }),
+});

@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { ErrorToast } from "@/components/Toaster";
+import { ErrorToast, SuccessToast } from "@/components/Toaster";
 import axios from "@/axios";
 import { getErrorMessage } from "@/init/appValues";
 
 const OTPVerification = () => {
-  const [otp, setOtp] = useState(["", "", "", ""]);
   const router = useRouter();
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const email = localStorage.getItem("forgotEmail") || "";
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -33,24 +35,26 @@ const OTPVerification = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    router.push("/auth/changepassword");
     if (otp.some((digit) => digit === "")) {
       ErrorToast("Please enter complete OTP.");
       return;
     }
     const otpValue = parseInt(otp.join(""), 10);
-
+    setLoading(true);
     try {
-      const response = await axios.post("/auth/verifyOTP", {
-        otp: otpValue,
+      const response = await axios.post("/auth/verify-forgot-password", {
+        otp: otpValue.toString(),
+        email: email,
         type: "EMAIL",
-        isDeleteAccountPurpose: false,
       });
       if (response.status === 200) {
-        const data = response?.data?.data;
+        SuccessToast("OTP verified successfully");
+        router.push("/auth/changepassword");
       }
     } catch (error) {
       ErrorToast(getErrorMessage(error));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -61,26 +65,26 @@ const OTPVerification = () => {
         Please enter the 4-digit OTP sent to your email/phone
       </p>
 
-      <form
-        onSubmit={handleSubmit}
-        className="flex gap-6 mb-6 justify-center items-center"
-      >
-        {otp.map((digit, index) => (
-          <Input
-            key={index}
-            id={`otp-${index}`}
-            type="text"
-            maxLength={1}
-            value={digit}
-            onChange={(e) => handleChange(e, index)}
-            className="w-16 text-center text-xl"
-          />
-        ))}
+      <form onSubmit={handleSubmit} className=" mb-6">
+        <div className="flex gap-6 justify-center items-center mb-6">
+          {otp.map((digit, index) => (
+            <Input
+              key={index}
+              id={`otp-${index}`}
+              type="text"
+              maxLength={1}
+              value={digit}
+              onChange={(e) => handleChange(e, index)}
+              className="w-16 text-center text-xl"
+            />
+          ))}
+        </div>
+        <div>
+          <Button disabled={loading} type="submit" className="w-full">
+            {loading ? "Verifying..." : "Verify OTP"}
+          </Button>
+        </div>
       </form>
-
-      <Button type="button" onClick={handleSubmit} className="w-full">
-        Verify OTP
-      </Button>
     </div>
   );
 };

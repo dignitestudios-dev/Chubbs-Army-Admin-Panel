@@ -18,7 +18,7 @@ interface EventItem {
   id: number;
   title: string;
   organizer: string;
-  date: string;
+  date?: string; // ✅ optional now
   location?: string;
   status: "submitted" | "approved" | "rejected" | "removed";
   rsvps?: number;
@@ -63,11 +63,16 @@ export default function EventTable(props: Props) {
               events.map((e) => (
                 <TableRow key={e.id}>
                   <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{e.title}</span>
-                      <span className="text-sm text-muted-foreground">
-                        ID {e.id}
+                    <div className="flex flex-col w-[150px]">
+                      <span
+                        className="font-medium line-clamp-1 cursor-help"
+                        title={e.title}
+                      >
+                        {e.title}
                       </span>
+                      {/* <span className="text-sm text-muted-foreground">
+                        ID {e.id}
+                      </span> */}
                     </div>
                   </TableCell>
                   <TableCell>{e.organizer}</TableCell>
@@ -79,8 +84,8 @@ export default function EventTable(props: Props) {
                         e.status === "approved"
                           ? "secondary"
                           : e.status === "submitted"
-                          ? "outline"
-                          : "destructive"
+                            ? "outline"
+                            : "destructive"
                       }
                     >
                       {e.status}
@@ -155,8 +160,13 @@ export default function EventTable(props: Props) {
               events.map((e) => (
                 <TableRow key={e.id}>
                   <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{e.title}</span>
+                    <div className="flex flex-col w-[150px]">
+                      <span
+                        className="font-medium line-clamp-1 cursor-help"
+                        title={e.title}
+                      >
+                        {e.title}
+                      </span>
                       <span className="text-sm text-muted-foreground">
                         {e.organizer}
                       </span>

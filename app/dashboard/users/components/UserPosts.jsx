@@ -6,18 +6,12 @@ import { Button } from "@/components/ui/button";
 import { useGlobalConfirm } from "@/components/GlobalConfirm";
 import { Trash2 } from "lucide-react";
 
-export default function UserPosts({ posts: initialPosts }) {
+export default function UserPosts({ posts: initialPosts, onDeletePost }) {
   const [posts, setPosts] = useState(initialPosts || []);
-
-  const handleRemove = (index) => {
-    setPosts((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // const handleRemoveAll = () => setPosts([]);
 
   const confirm = useGlobalConfirm();
 
-  const handleRemoveWithConfirm = async (index) => {
+  const handleRemoveWithConfirm = async (postId) => {
     const ok = await confirm({
       title: "Remove post",
       description: "This will permanently remove the post.",
@@ -25,19 +19,11 @@ export default function UserPosts({ posts: initialPosts }) {
       cancelLabel: "Cancel",
       destructive: true,
     });
-    if (ok) handleRemove(index);
-  };
 
-  // const handleRemoveAllWithConfirm = async () => {
-  //   const ok = await confirm({
-  //     title: "Remove all posts",
-  //     description: "This will remove all posts for this user.",
-  //     confirmLabel: "Remove all",
-  //     cancelLabel: "Cancel",
-  //     destructive: true,
-  //   });
-  //   if (ok) handleRemoveAll();
-  // };
+    if (ok) {
+      await onDeletePost(postId);
+    }
+  };
 
   if (!posts || posts.length === 0) {
     return (
@@ -78,7 +64,7 @@ export default function UserPosts({ posts: initialPosts }) {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 cursor-pointer"
-                    onClick={() => handleRemoveWithConfirm(i)}
+                    onClick={() => handleRemoveWithConfirm(post.id)}
                   >
                     <Trash2 className="size-4" />
                     <span className="sr-only">Remove</span>

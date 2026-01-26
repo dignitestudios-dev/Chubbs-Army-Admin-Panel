@@ -16,11 +16,14 @@ import { calculateAge } from "@/lib/utils";
 type PostType = "reels" | "challenges" | "lost-found";
 
 interface Post {
-  id: number;
+  id: string;
   title: string;
   views: number;
   likes: number;
   type: PostType;
+  totalLikes: number;
+  totalComments: number;
+  createdAt: string;
 }
 
 export default function PetDetailPage({
@@ -36,6 +39,7 @@ export default function PetDetailPage({
   const [activeTab, setActiveTab] = useState<PostType>("reels");
 
   async function handleRemovePost(postId: string) {
+    console.log("🚀 ~ handleRemovePost ~ postId:", postId);
     const ok = await confirm({
       title: "Remove post",
       description: "This will permanently remove the post for this pet.",
@@ -43,7 +47,8 @@ export default function PetDetailPage({
       cancelLabel: "Cancel",
       destructive: true,
     });
-    if (ok) setPosts((p) => p.filter((x) => x.id !== postId));
+    console.log("🚀 ~ handleRemovePost ~ ok:", ok);
+    // if (ok) setPosts((p) => p.filter((x) => x.id !== postId));
   }
 
   const [petData, setPetData] = useState(null);
@@ -149,7 +154,12 @@ export default function PetDetailPage({
                 {/* <h2 className="text-lg font-semibold">Posts</h2> */}
                 <Tabs
                   defaultValue="reels"
-                  onValueChange={(v) => setActiveTab(v as any)}
+                  // onValueChange={(v) => setActiveTab(v as any)}
+                  onValueChange={(v) => {
+                    if (v === "reels" || v === "lost-found") {
+                      setActiveTab(v);
+                    }
+                  }}
                 >
                   <TabsList>
                     <TabsTrigger value="reels">Reels</TabsTrigger>
@@ -236,7 +246,7 @@ function PostList({
   onRemove,
 }: {
   posts: Post[];
-  onRemove: (id: number) => void;
+  onRemove: (id: string) => void;
 }) {
   const router = useRouter();
   if (!posts?.length) {
