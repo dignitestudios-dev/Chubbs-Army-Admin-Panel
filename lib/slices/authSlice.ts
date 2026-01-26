@@ -19,7 +19,7 @@ const initialState: AuthState = {
     email: "dummy@example.com",
   },
   token: null,
-  isAuthenticated: true,
+  isAuthenticated: false,
 };
 
 const authSlice = createSlice({

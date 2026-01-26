@@ -53,7 +53,7 @@ instance.interceptors.response.use(
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       ErrorToast("Session expired. Please relogin");
-      // window.location.href = "/";s
+      window.location.href = "/";
     }
 
     return Promise.reject(error);
