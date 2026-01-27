@@ -30,7 +30,7 @@ export function SiteHeader() {
             className="mx-2 data-[orientation=vertical]:h-4"
           />
           <div className="ml-auto flex items-center gap-2">
-            <Button
+            {/* <Button
               variant="ghost"
               asChild
               size="sm"
@@ -67,7 +67,7 @@ export function SiteHeader() {
               >
                 GitHub
               </a>
-            </Button>
+            </Button> */}
           </div>
         </div>
       </header>

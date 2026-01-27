@@ -13,13 +13,12 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
-  user: {
-    id: 1,
-    name: "Dummy User",
-    email: "dummy@example.com",
-  },
+  user: null,
   token: null,
-  isAuthenticated: false,
+  isAuthenticated:
+    typeof window !== "undefined" && localStorage.getItem("token")
+      ? true
+      : false,
 };
 
 const authSlice = createSlice({
@@ -27,6 +26,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     login: (state, action) => {
+      console.log(state?.isAuthenticated, "--- auth ---- ");
       state.isAuthenticated = true;
       state.user = action.payload.user; // store user info
       state.token = action.payload.token; // store token

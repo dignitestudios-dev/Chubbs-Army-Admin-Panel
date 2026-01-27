@@ -72,15 +72,17 @@ export default function ReportedContentTable({ data }) {
               </TableCell> */}
 
               {/* Owner */}
-              <TableCell className="font-medium">@{item.owner}</TableCell>
+              <TableCell className="font-medium">
+                @{item?.pet?.petName}
+              </TableCell>
 
               {/* Report Reason */}
               <TableCell>
-                <Badge variant="outline">{item.reportReason}</Badge>
+                <Badge variant="outline">{item?.reason}</Badge>
               </TableCell>
 
               {/* Reported By */}
-              <TableCell>@{item.reportedBy}</TableCell>
+              <TableCell>@{item?.id}</TableCell>
 
               {/* Report Count */}
               {/* <TableCell>

@@ -5,14 +5,15 @@ import { ErrorToast } from "@/components/Toaster";
 import axios from "../../../axios";
 import ReportsTable from "./components/data-table";
 
+// Shared Pet type
+// Pet / creator info
 interface Pet {
   id: string;
   petName: string;
   profileUrl: string;
 }
-interface PostCount {
-  postreport: number;
-}
+
+// Media attached to the post
 interface PostMedia {
   uuid: string;
   fileUrl: string;
@@ -22,28 +23,34 @@ interface PostMedia {
   thumbnailUrl: string | null;
 }
 
+// Prisma-style count object
+interface PostCount {
+  postreport: number;
+}
+
+// Full Post object
 interface Post {
   id: string;
   title: string;
   description: string | null;
   media: PostMedia[];
   mediaType: "Image" | "Video";
+  type: "Post" | "Reel";
+  createdAt: string;
   totalComments: number;
   totalLikes: number;
-  createdAt: string;
-  type: "Post" | "Reel";
-  _count: PostCount;
   pet: Pet;
+  _count: PostCount;
 }
 
+// Root row object (used in table / list)
 interface ContentData {
-  id: string;
-  petId: string;
   postId: string;
-  reason: string;
-  createdAt: string;
-  updatedAt: string;
-  pet: Pet;
+  creator: string;
+  contentType: "Post" | "Reel";
+  postedOn: string;
+  engagement: number;
+  reports: number;
   post: Post;
 }
 

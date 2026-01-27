@@ -19,6 +19,12 @@ export const createChallengeValues = {
   image: null,
 };
 
+export const sendNotificationValues = {
+  title: "",
+  description: "",
+  role: "" as "USER" | "SERVICE_PROVIDER" | "EVENT_ORGANIZER",
+};
+
 export function getErrorMessage(error: any): string {
   return error?.response?.data?.message || "Something went wrong";
 }

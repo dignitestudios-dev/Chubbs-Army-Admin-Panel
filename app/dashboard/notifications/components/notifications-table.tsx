@@ -25,7 +25,7 @@ export type Notification = {
   id: number;
   title: string;
   message: string;
-  audience: "Global" | "All Users" | "Vendors" | "Admins";
+  audience: "USER" | "SERVICE_PROVIDER" | "EVENT_ORGANIZER";
   sentAt?: string;
   status: "Draft" | "Sent" | "Failed";
 };
@@ -140,8 +140,8 @@ export default function NotificationsTable({
                         n.status === "Sent"
                           ? "secondary"
                           : n.status === "Failed"
-                          ? "destructive"
-                          : "outline"
+                            ? "destructive"
+                            : "outline"
                       }
                     >
                       {n.status}

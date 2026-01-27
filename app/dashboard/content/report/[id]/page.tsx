@@ -1,30 +1,47 @@
-import ReportedContentTable from "../../components/reportedContentTable";
+"use client";
 
-// lib/mockReportedContent.js
-const reportedContent = [
-  {
-    id: "post_1",
-    type: "image",
-    thumbnail: "https://picsum.photos/200/300",
-    owner: "john_doe",
-    reportReason: "Inappropriate Content",
-    reportedBy: "alice_smith",
-    reportCount: 5,
-    createdAt: "2024-01-12",
-  },
-  {
-    id: "post_2",
-    type: "video",
-    thumbnail: "https://picsum.photos/200",
-    owner: "mike_jones",
-    reportReason: "Spam",
-    reportedBy: "emma_w",
-    reportCount: 12,
-    createdAt: "2024-01-10",
-  },
-];
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import ReportedContentTable from "../../components/reportedContentTable";
+import axios from "@/axios";
+
+interface ContentData {
+  id: string;
+  owner: string;
+  reportReason: string;
+  reportedBy: string;
+  // Add other fields if needed
+}
 
 export default function ReportedContentPage() {
+  const [reportedContent, setReportedContent] = useState<ContentData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const params = useParams();
+  const id = params.id as string;
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await axios.get(`/admin/reports/${id}`);
+        if (response.status === 200) {
+          setReportedContent(response?.data?.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch reports:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchReports();
+    }
+  }, [id]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-xl font-bold">Reported Content Queue</h1>

@@ -22,15 +22,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { formatDate } from "@/lib/utils";
 
+// Pet / creator info
 interface Pet {
   id: string;
   petName: string;
   profileUrl: string;
 }
-interface PostCount {
-  postreport: number;
-}
+
+// Media attached to the post
 interface PostMedia {
   uuid: string;
   fileUrl: string;
@@ -40,31 +41,38 @@ interface PostMedia {
   thumbnailUrl: string | null;
 }
 
+// Prisma-style count object
+interface PostCount {
+  postreport: number;
+}
+
+// Full Post object
 interface Post {
   id: string;
   title: string;
   description: string | null;
   media: PostMedia[];
   mediaType: "Image" | "Video";
+  type: "Post" | "Reel";
+  createdAt: string;
   totalComments: number;
   totalLikes: number;
-  createdAt: string;
-  type: "Post" | "Reel";
-  _count: PostCount;
   pet: Pet;
+  _count: PostCount;
 }
 
+// Root row object (used in table / list)
 interface ContentData {
-  id: string;
-  petId: string;
   postId: string;
-  reason: string;
-  createdAt: string;
-  updatedAt: string;
-  pet: Pet;
+  creator: string;
+  contentType: "Post" | "Reel";
+  postedOn: string;
+  engagement: number;
+  reports: number;
   post: Post;
 }
 
+// Props for table
 interface DataTableProps {
   contentData: ContentData[];
 }
@@ -121,7 +129,7 @@ const ReportsTable = ({ contentData }: DataTableProps) => {
           <TableBody>
             {contentData?.length ? (
               contentData?.map((content) => (
-                <TableRow key={content.id}>
+                <TableRow key={content?.post?.id}>
                   {/* Creator */}
                   <TableCell>
                     <div className="flex items-center gap-3">
@@ -150,7 +158,9 @@ const ReportsTable = ({ contentData }: DataTableProps) => {
 
                   {/* Posted On */}
                   <TableCell>
-                    <span className="text-sm">{content?.post?.createdAt}</span>
+                    <span className="text-sm">
+                      {formatDate(content?.post?.createdAt)}
+                    </span>
                   </TableCell>
 
                   {/* Engagement */}
@@ -165,19 +175,23 @@ const ReportsTable = ({ contentData }: DataTableProps) => {
                   <TableCell>
                     <Badge
                       variant={
-                        content.post._count.postreport > 0
+                        content?.post?._count?.postreport > 0
                           ? "destructive"
                           : "secondary"
                       }
                       onClick={() =>
-                        router.push(`/dashboard/content/report/${content.id}`)
+                        router.push(
+                          `/dashboard/content/report/${content?.postId}`,
+                        )
                       }
                     >
-                      {content.post._count.postreport || 0}
+                      {content?.post?._count?.postreport || 0}
                     </Badge>
                     <button
                       onClick={() =>
-                        router.push(`/dashboard/content/report/${content.id}`)
+                        router.push(
+                          `/dashboard/content/report/${content?.postId}`,
+                        )
                       }
                       className=" ml-2 cursor-pointer underline "
                     >
@@ -193,7 +207,7 @@ const ReportsTable = ({ contentData }: DataTableProps) => {
                         size="icon"
                         className="h-8 w-8 cursor-pointer"
                         onClick={() =>
-                          router.push(`/dashboard/content/${content.id}`)
+                          router.push(`/dashboard/content/${content?.post?.id}`)
                         }
                       >
                         <Eye className="size-4" />
