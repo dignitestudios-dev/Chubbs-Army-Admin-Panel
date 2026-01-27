@@ -8,34 +8,6 @@ import { formatDate } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Heart, MessageCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// Mock dataset for demo — replace with API fetch as needed
-const reportedContent = [
-  {
-    id: "post_1",
-    type: "image",
-    thumbnail: "https://picsum.photos/800/480",
-    owner: "john_doe",
-    ownerName: "John Doe",
-    description: "Clean, scalable Post-Event Detail page design",
-    reportedBy: "alice_smith",
-    reportCount: 5,
-    createdAt: "2024-01-12",
-    caption: "Sunset at the beach",
-  },
-  {
-    id: "post_2",
-    type: "video",
-    thumbnail: "https://www.w3schools.com/html/mov_bbb.mp4",
-    owner: "mike_jones",
-    ownerName: "Mike Jones",
-    description: "clean, scalable Post-Event Detail page design",
-    reportedBy: "emma_w",
-    reportCount: 12,
-    createdAt: "2024-01-10",
-    caption: "Funny skateboarding fails",
-  },
-];
-
 export default function ContentDetailPage({
   params,
 }: {
@@ -68,17 +40,6 @@ export default function ContentDetailPage({
       fetchUserDetails();
     }
   }, [id]);
-
-  if (!content) {
-    return (
-      <div className="p-6">
-        <h1 className="text-xl font-bold">Content Not Found</h1>
-        <p className="text-sm text-muted-foreground mt-2">
-          No content matches the requested id.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="p-6 space-y-6">

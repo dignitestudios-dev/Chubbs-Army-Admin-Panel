@@ -15,7 +15,7 @@ import {
 type SectionType = "approval" | "monitoring" | "post";
 
 interface EventItem {
-  id: number;
+  id: string;
   title: string;
   organizer: string;
   date?: string; // ✅ optional now
@@ -32,12 +32,12 @@ interface EventItem {
 interface Props {
   section: SectionType;
   events?: EventItem[];
-  onApprove?: (id: number) => void;
-  onReject?: (id: number) => void;
-  onEdit?: (id: number) => void;
-  onRemove?: (id: number) => void;
-  onViewMetrics?: (id: number) => void;
-  onRemoveContent?: (id: number) => void;
+  onApprove?: (id: string) => void;
+  onReject?: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onRemove?: (id: string) => void;
+  onViewMetrics?: (id: string) => void;
+  onRemoveContent?: (id: string) => void;
 }
 
 export default function EventTable(props: Props) {
@@ -96,6 +96,13 @@ export default function EventTable(props: Props) {
                       {e.status === "submitted" && (
                         <>
                           <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => props.onViewMetrics?.(e.id)}
+                          >
+                            View
+                          </Button>
+                          <Button
                             size="sm"
                             onClick={() => props.onApprove?.(e.id)}
                           >
@@ -110,20 +117,6 @@ export default function EventTable(props: Props) {
                           </Button>
                         </>
                       )}
-                      {/* <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => props.onEdit?.(e.id)}
-                      >
-                        Edit
-                      </Button> */}
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => props.onRemove?.(e.id)}
-                      >
-                        Remove
-                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>

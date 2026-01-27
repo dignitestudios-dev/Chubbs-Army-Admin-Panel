@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import axios from "../../../axios";
 import { ErrorToast } from "@/components/Toaster";
 import { AxiosError } from "axios";
+import { formatDate } from "@/lib/utils";
 
 interface EventData {
   id: string;
@@ -21,17 +22,13 @@ interface EventData {
   };
   date?: string; // ✅ optional now
   location?: string;
-    rsvps?: number;
-    currentRSVP?: number;
+  rsvps?: number;
+  currentRSVP?: number;
   ticketsSold?: number;
   attendance?: number;
   reports?: number;
   ratingAvg?: number;
   feedbackCount?: number;
-  
-
-  
-  
 }
 
 export default function EventPage() {
@@ -79,28 +76,28 @@ export default function EventPage() {
     fetchEvents(status);
   }, [selectedSection]);
 
-  const approve = (id: number) =>
+  const approve = (id: string) =>
     setEvents((s) =>
       s.map((e) =>
         e.id === id.toString() ? { ...e, status: "ACTIVE" as const } : e,
       ),
     );
-  const reject = (id: number) =>
+  const reject = (id: string) =>
     setEvents((s) =>
       s.map((e) =>
         e.id === id.toString() ? { ...e, status: "COMPLETED" as const } : e,
       ),
     );
-  const edit = (id: number) => alert(`Edit event ${id} — open editor`);
-  const remove = (id: number) =>
+  const edit = (id: string) => alert(`Edit event ${id} — open editor`);
+  const remove = (id: string) =>
     setEvents((s) => s.filter((e) => e.id !== id.toString()));
-  const viewPostEvent = (id: number) => {
+  const viewPostEvent = (id: string) => {
     router.push(`/dashboard/event/post/${id}`);
   };
-  const viewMetrics = (id: number) => {
+  const viewMetrics = (id: string) => {
     router.push(`/dashboard/event/monitoring/${id}`);
   };
-  const removeContent = (id: number) =>
+  const removeContent = (id: string) =>
     alert(`Remove inappropriate content for ${id}`);
 
   return (
@@ -122,10 +119,10 @@ export default function EventPage() {
         <Tabs
           value={selectedSection}
           onValueChange={(v) => {
-    if (v === "approval" || v === "monitoring" || v === "post") {
-      setSelectedSection(v);
-    }
-  }}
+            if (v === "approval" || v === "monitoring" || v === "post") {
+              setSelectedSection(v);
+            }
+          }}
         >
           <TabsList>
             <TabsTrigger value="approval">Event Approval</TabsTrigger>
@@ -142,10 +139,10 @@ export default function EventPage() {
             <EventTable
               section="approval"
               events={events.map((e) => ({
-                id: parseInt(e.id),
+                id: e.id,
                 title: e.title,
                 organizer: `${e?.organizer?.firstName} ${e?.organizer?.lastName}`,
-                // date: new Date(e?.eventDate)?.toISOString()?.split("T")[0],
+                date: formatDate(e?.eventDate),
                 location: e?.placeName,
                 status:
                   e?.status === "DRAFT"
@@ -174,9 +171,9 @@ export default function EventPage() {
             <EventTable
               section="monitoring"
               events={events.map((e) => ({
-                id: parseInt(e.id),
-                title: e.title,
-                organizer: `${e.organizer.firstName} ${e.organizer.lastName}`,
+                id: e?.id,
+                title: e?.title,
+                organizer: `${e?.organizer?.firstName} ${e?.organizer?.lastName}`,
                 status: "approved",
                 rsvps: e?.currentRSVP,
                 ticketsSold: 0,
@@ -196,15 +193,15 @@ export default function EventPage() {
             <EventTable
               section="post"
               events={events.map((e) => ({
-                id: parseInt(e.id),
-                title: e.title,
-                organizer: `${e.organizer.firstName} ${e.organizer.lastName}`,
-                date: new Date(e.eventDate).toISOString().split("T")[0],
-                location: e.placeName,
+                id: e?.id,
+                title: e?.title,
+                organizer: `${e?.organizer?.firstName} ${e?.organizer?.lastName}`,
+                date: formatDate(e?.eventDate),
+                location: e?.placeName,
                 status:
-                  e.status === "DRAFT"
+                  e?.status === "DRAFT"
                     ? "submitted"
-                    : e.status === "ACTIVE"
+                    : e?.status === "ACTIVE"
                       ? "approved"
                       : "rejected",
                 rsvps: 0,

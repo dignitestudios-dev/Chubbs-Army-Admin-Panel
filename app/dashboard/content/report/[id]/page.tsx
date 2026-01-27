@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import ReportedContentTable from "../../components/reportedContentTable";
 import axios from "@/axios";
 
@@ -18,6 +18,8 @@ export default function ReportedContentPage() {
   const [loading, setLoading] = useState(true);
   const params = useParams();
   const id = params.id as string;
+  const searchParams = useSearchParams();
+  const creator = searchParams.get("creator");
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -49,7 +51,7 @@ export default function ReportedContentPage() {
         Review and moderate reported posts
       </p>
 
-      <ReportedContentTable data={reportedContent} />
+      <ReportedContentTable data={reportedContent} creator={creator} />
     </div>
   );
 }

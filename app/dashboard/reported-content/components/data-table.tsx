@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -75,40 +75,37 @@ interface ContentData {
 // Props for table
 interface DataTableProps {
   contentData: ContentData[];
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
 }
 
-const ReportsTable = ({ contentData }: DataTableProps) => {
-  console.log("🚀 ~ ReportsTable ~ contentData:", contentData);
+const ReportsTable = ({
+  contentData,
+  onPageChange,
+  onPageSizeChange,
+  totalPages,
+  currentPage,
+  pageSize,
+}: DataTableProps) => {
   const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(
-    Math.ceil(contentData?.length / 10),
-  );
 
   const handlePageSizeChange = (value: string) => {
     const newPageSize = Number(value);
-    const newTotalPages = Math.ceil(contentData?.length / newPageSize);
-    setPageSize(newPageSize);
-    setTotalPages(newTotalPages);
-    if (currentPage > newTotalPages) {
-      setCurrentPage(newTotalPages);
-    }
+    onPageSizeChange(newPageSize);
   };
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
-      const newPage = currentPage - 1;
-      setCurrentPage(newPage);
+      onPageChange(currentPage - 1);
     }
   };
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      const newPage = currentPage + 1;
-      setCurrentPage(newPage);
-      console.log(`Page changed to ${newPage}`);
-      // API Call
+      onPageChange(currentPage + 1);
     }
   };
   return (
@@ -134,9 +131,16 @@ const ReportsTable = ({ contentData }: DataTableProps) => {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarFallback className="text-xs font-medium">
-                          {content?.post?.pet?.profileUrl}
-                        </AvatarFallback>
+                        {content?.post?.pet?.profileUrl ? (
+                          <AvatarImage
+                            src={content.post.pet.profileUrl}
+                            alt={content.post.pet.petName}
+                          />
+                        ) : (
+                          <AvatarFallback className="text-xs font-medium">
+                            {content?.post?.pet?.petName?.[0] ?? "?"}
+                          </AvatarFallback>
+                        )}
                       </Avatar>
                       <div className="flex flex-col">
                         <span className="font-medium">
@@ -181,7 +185,9 @@ const ReportsTable = ({ contentData }: DataTableProps) => {
                       }
                       onClick={() =>
                         router.push(
-                          `/dashboard/content/report/${content?.postId}`,
+                          `/dashboard/content/report/${content.postId}?creator=${encodeURIComponent(
+                            content?.creator,
+                          )}`,
                         )
                       }
                     >
@@ -190,10 +196,12 @@ const ReportsTable = ({ contentData }: DataTableProps) => {
                     <button
                       onClick={() =>
                         router.push(
-                          `/dashboard/content/report/${content?.postId}`,
+                          `/dashboard/content/report/${content.postId}?creator=${encodeURIComponent(
+                            content?.creator,
+                          )}`,
                         )
                       }
-                      className=" ml-2 cursor-pointer underline "
+                      className="ml-2 cursor-pointer underline"
                     >
                       View
                     </button>

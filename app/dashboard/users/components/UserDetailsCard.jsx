@@ -9,13 +9,13 @@ export default function UserDetailsCard({ user }) {
           <h2 className="text-lg font-semibold mb-2">Account Details</h2>
         </div>
         <p>
-          <strong>Name:</strong> {user.name}
+          <strong>Name:</strong> {user?.name}
         </p>
         <p>
-          <strong>Email:</strong> {user.email}
+          <strong>Email:</strong> {user?.email}
         </p>
         <p>
-          <strong>Status:</strong> {user.status}
+          <strong>Status:</strong> {user?.status}
         </p>
         {/* <p>
           <strong>Rank:</strong> {user.rank}

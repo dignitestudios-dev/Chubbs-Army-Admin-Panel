@@ -15,7 +15,7 @@ import { useState } from "react";
 import ModerationActionModal from "./ModerationActionModal";
 import { MODERATION_CONFIG } from "./modalConfig";
 
-export default function ReportedContentTable({ data }) {
+export default function ReportedContentTable({ data, creator }) {
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalType, setModalType] = useState(null);
 
@@ -72,9 +72,7 @@ export default function ReportedContentTable({ data }) {
               </TableCell> */}
 
               {/* Owner */}
-              <TableCell className="font-medium">
-                @{item?.pet?.petName}
-              </TableCell>
+              <TableCell className="font-medium">@{creator}</TableCell>
 
               {/* Report Reason */}
               <TableCell>
@@ -82,7 +80,7 @@ export default function ReportedContentTable({ data }) {
               </TableCell>
 
               {/* Reported By */}
-              <TableCell>@{item?.id}</TableCell>
+              <TableCell>@{item?.pet?.petName}</TableCell>
 
               {/* Report Count */}
               {/* <TableCell>

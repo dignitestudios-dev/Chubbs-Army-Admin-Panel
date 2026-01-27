@@ -4,6 +4,7 @@ import { AxiosError } from "axios";
 import { ErrorToast } from "@/components/Toaster";
 import axios from "../../../axios";
 import ReportsTable from "./components/data-table";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 
 // Shared Pet type
 // Pet / creator info
@@ -63,12 +64,13 @@ export default function ContentPage() {
 
   const fetchUsers = async () => {
     setLoading(true);
+    const params: unknown = { page, limit };
     try {
-      const response = await axios.get("/admin/reports");
+      const response = await axios.get("/admin/reports", { params });
 
       if (response.status === 200) {
         setContent(response.data.data);
-        // setTotalPages(response.data.data.meta.totalPages);
+        setTotalPages(response?.data?.data?.pagination?.totalPages ?? 1);
       }
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;
@@ -81,14 +83,34 @@ export default function ContentPage() {
   useEffect(() => {
     fetchUsers();
   }, [page, limit]);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePageSizeChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-muted-foreground text-[22px] font-bold">
         Reported Content
       </h1>
-      <div className="@container/main px-4 lg:px-6 mt-4 lg:mt-4">
-        <ReportsTable contentData={content} />
-      </div>
+      {loading ? (
+        <TableSkeleton rows={limit} columns={4} />
+      ) : (
+        <div className="@container/main px-4 lg:px-6 mt-4 lg:mt-4">
+          <ReportsTable
+            contentData={content}
+            totalPages={totalPages}
+            currentPage={page}
+            pageSize={limit}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
+        </div>
+      )}
     </div>
   );
 }

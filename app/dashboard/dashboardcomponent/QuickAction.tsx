@@ -1,15 +1,44 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Flag, ClipboardClock, Hourglass, NotebookPen } from "lucide-react";
+import { Flag, Hourglass, NotebookPen } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { useState, useMemo } from "react";
+import axios from "@/axios";
+import { AxiosError } from "axios";
+import { ErrorToast, SuccessToast } from "@/components/Toaster";
+import { Button } from "@/components/ui/button";
 
 export function QuickAction({ statsData }: { statsData: StatsData | null }) {
   const router = useRouter();
   const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const sendAnnouncement = async () => {
+    if (!description.trim()) {
+      ErrorToast("Description is required");
+      return;
+    }
+    try {
+      setLoading(true);
+      const response = await axios.post("/admin/send-notifications", {
+        title: "Urgent Announcement",
+        description: description,
+        role: "USER",
+      });
+      if (response.status === 200 || response.status === 201) {
+        SuccessToast("Announcement sent successfully!");
+        setDescription("");
+      }
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      ErrorToast(err.response?.data?.message ?? "Failed to send announcement");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const performanceMetrics: QuickAction[] = useMemo(() => {
     if (!statsData) return [];
@@ -88,12 +117,21 @@ export function QuickAction({ statsData }: { statsData: StatsData | null }) {
               )}
               {metric?.action && (
                 <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                  <button
-                    onClick={() => router.push(metric.route)}
-                    className="cursor-pointer p-2 border-[1px] border-green-200 bg-green-50 text-green-700 rounded-3xl"
+                  <Button
+                    onClick={() => {
+                      if (metric.title === "Send Announcement") {
+                        sendAnnouncement();
+                      } else {
+                        router.push(metric.route);
+                      }
+                    }}
+                    disabled={loading && metric.title === "Send Announcement"}
+                    className="cursor-pointer p-2 border border-green-200 bg-green-50 text-green-700 rounded-3xl hover:bg-green-100"
                   >
-                    {metric.action}
-                  </button>
+                    {loading && metric.title === "Send Announcement"
+                      ? "Sending..."
+                      : metric.action}
+                  </Button>
                 </div>
               )}
             </div>

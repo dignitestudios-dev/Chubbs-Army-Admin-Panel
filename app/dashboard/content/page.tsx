@@ -49,7 +49,7 @@ export default function ContentPage() {
   const [loading, setLoading] = useState(false);
   const [update, setUpdate] = useState(false);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState("10");
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export default function ContentPage() {
         });
 
         setChallenges(response?.data?.data?.data);
-        setTotalPages(response?.data?.data?.meta?.totalPages ?? 1);
+        setTotalPages(response?.data?.data?.pagination?.totalPages ?? 1);
       } catch (error) {
         const err = error as AxiosError<{ message: string }>;
         ErrorToast(err.response?.data?.message ?? "Failed to fetch challenges");
@@ -90,7 +90,7 @@ export default function ContentPage() {
     }
   };
 
-  const handlePageSizeChange = (newLimit: number) => {
+  const handlePageSizeChange = (newLimit: string) => {
     setLimit(newLimit);
     setPage(1);
   };
@@ -341,14 +341,13 @@ export default function ContentPage() {
               </Label>
               <Select
                 value={limit.toString()}
-                // onValueChange={handlePageSizeChange}
+                onValueChange={handlePageSizeChange}
               >
                 <SelectTrigger className="w-20 cursor-pointer" id="page-size">
                   <SelectValue placeholder={limit.toString()} />
                 </SelectTrigger>
                 <SelectContent side="top">
                   <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="12">12</SelectItem>
                   <SelectItem value="30">30</SelectItem>
                   <SelectItem value="40">40</SelectItem>
                   <SelectItem value="50">50</SelectItem>

@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
-
 interface Business {
   id: string;
   businessName: string;

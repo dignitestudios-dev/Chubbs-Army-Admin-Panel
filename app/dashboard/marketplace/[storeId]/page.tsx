@@ -1,10 +1,15 @@
 "use client";
-import React, { use, useEffect, useState } from "react";
-import Link from "next/link";
+import { use, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import ProductDetailsModal from "../components/ProductDetailsModal";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import axios from "@/axios";
@@ -64,10 +69,13 @@ export default function StoreProductsPage({
 }) {
   const { storeId } = use(params);
 
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState("10");
+  const [totalPages, setTotalPages] = useState(1);
+
   const [products, setProducts] = useState<ProductData[]>([]);
-  console.log("🚀 ~ StoreProductsPage ~ products:", products);
   const [services, setServices] = useState<ServiceData[]>([]);
-  console.log("🚀 ~ StoreProductsPage ~ services:", services);
+
   const [loading, setLoading] = useState(false);
 
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -129,6 +137,27 @@ export default function StoreProductsPage({
     }
   }, [selectedSection, search]);
 
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePreviousPage = () => {
+    if (page > 1) {
+      handlePageChange(page - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      handlePageChange(page + 1);
+    }
+  };
+
+  const handlePageSizeChange = (newLimit: string) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
+
   const openModal = (item: Item, type: "product" | "service") => {
     setSelectedItem(item);
     setSelectedType(type);
@@ -142,7 +171,11 @@ export default function StoreProductsPage({
         <div>
           <Tabs
             value={selectedSection}
-            onValueChange={(v) => setSelectedSection(v as any)}
+            onValueChange={(v) => {
+              if (v === "listings" || v === "service") {
+                setSelectedSection(v);
+              }
+            }}
           >
             <TabsList>
               {/* <TabsTrigger value="vendors">Vendors</TabsTrigger> */}
@@ -311,6 +344,53 @@ export default function StoreProductsPage({
           )}
         </>
       )}
+
+      <div className="flex items-center justify-between space-x-2 py-4">
+        <div className="flex items-center space-x-2">
+          <Label htmlFor="page-size" className="text-sm font-medium">
+            Show
+          </Label>
+          <Select value={limit.toString()} onValueChange={handlePageSizeChange}>
+            <SelectTrigger className="w-20 cursor-pointer" id="page-size">
+              <SelectValue placeholder={limit.toString()} />
+            </SelectTrigger>
+            <SelectContent side="top">
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="30">30</SelectItem>
+              <SelectItem value="40">40</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center space-x-6 lg:space-x-8">
+          <div className="hidden sm:flex items-center space-x-2">
+            <p className="text-sm font-medium">Page</p>
+            <strong className="text-sm">
+              {page} of {totalPages}
+            </strong>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePreviousPage}
+              disabled={page <= 1}
+              className="cursor-pointer"
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={page >= totalPages}
+              className="cursor-pointer"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <ProductDetailsModal
         isOpen={isOpen}

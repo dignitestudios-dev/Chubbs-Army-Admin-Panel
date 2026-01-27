@@ -6,6 +6,15 @@ import BusinessTable from "./components/business-table";
 import axios from "../../../axios";
 import { ErrorToast } from "@/components/Toaster";
 import { AxiosError } from "axios";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 interface ProductData {
   id: string;
@@ -57,6 +66,9 @@ export default function MarketplacePage() {
   const [products, setProducts] = useState<ProductData[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState("10");
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const businessProfiles = async () => {
@@ -65,6 +77,7 @@ export default function MarketplacePage() {
         if (response.status === 200) {
           console.log("Business Profiles:", response.data.data);
           setBusinessData(response.data.data);
+          setTotalPages(response?.data?.data?.pagination?.totalPages ?? 1);
         }
       } catch (error) {
         const err = error as AxiosError<{ message: string }>;
@@ -142,69 +155,83 @@ export default function MarketplacePage() {
 
   const escalateOrder = (id: number) => alert(`Escalate order ${id}`);
 
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePreviousPage = () => {
+    if (page > 1) {
+      handlePageChange(page - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      handlePageChange(page + 1);
+    }
+  };
+
+  const handlePageSizeChange = (newLimit: string) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
+
   return (
     <div className="w-full space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-[22px] font-bold">Marketplace Management</h1>
-        {/* <div className="flex items-center gap-4">
-          
-          <Button
-            onClick={() => {
-              alert("Export CSV - implement backend");
-            }}
-          >
-            Export
-          </Button>
-        </div> */}
       </div>
 
       <section className="space-y-3">
         <BusinessTable businesses={businessData} />
       </section>
-
-      {/* <section className="space-y-3">
-        {selectedSection === "listings" && (
-          <>
-            <h2 className="text-lg font-semibold">Stores</h2>
-            <MarketplaceTable
-              section="listings"
-              listings={products.map((p) => ({
-                id: parseInt(p.id) || 0, // since id is string, but table expects number
-                email: p.owner.BusinessProfile[0]?.businessEmail || "",
-                phone: p.owner.BusinessProfile[0]?.businessPhoneNumber || "",
-                title: p.name,
-                vendor: `${p.owner.firstName} ${p.owner.lastName}`,
-                category: p.category,
-                status: "live" as const,
-              }))}
-              onEditListing={editListing}
-              onRemoveListing={removeListing}
-              onFlagListing={flagListing}
-            />
-          </>
-        )}
-
-        {selectedSection === "service" && (
-          <>
-            <h2 className="text-lg font-semibold">Service Listing</h2>
-            <MarketplaceTable
-              section="orders"
-              orders={services.map((s) => ({
-                id: parseInt(s.id) || 0,
-                providerName: `${s.owner.firstName} ${s.owner.lastName}`,
-                businessName: s.owner.BusinessProfile[0]?.businessName || "",
-                serviceName: s.name,
-                category: s.category,
-                location: "", // not in data
-                bookingDate: new Date(s.createdAt).toISOString().split("T")[0],
-                status: "pending" as const,
-              }))}
-              onViewOrder={viewOrder}
-              onEscalateOrder={escalateOrder}
-            />
-          </>
-        )}
-      </section> */}
+      <div className="flex items-center justify-between space-x-2 py-4">
+        <div className="flex items-center space-x-2">
+          <Label htmlFor="page-size" className="text-sm font-medium">
+            Show
+          </Label>
+          <Select value={limit.toString()} onValueChange={handlePageSizeChange}>
+            <SelectTrigger className="w-20 cursor-pointer" id="page-size">
+              <SelectValue placeholder={limit.toString()} />
+            </SelectTrigger>
+            <SelectContent side="top">
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="12">12</SelectItem>
+              <SelectItem value="30">30</SelectItem>
+              <SelectItem value="40">40</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center space-x-6 lg:space-x-8">
+          <div className="hidden sm:flex items-center space-x-2">
+            <p className="text-sm font-medium">Page</p>
+            <strong className="text-sm">
+              {page} of {totalPages}
+            </strong>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePreviousPage}
+              disabled={page <= 1}
+              className="cursor-pointer"
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={page >= totalPages}
+              className="cursor-pointer"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

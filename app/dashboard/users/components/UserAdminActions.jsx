@@ -4,22 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGlobalConfirm } from "@/components/GlobalConfirm";
 
-export default function UserAdminActions({ user, reports }) {
+export default function UserAdminActions({ user, reports, onBanUser }) {
+  console.log("🚀 ~ UserAdminActions ~ user:", user);
   const confirm = useGlobalConfirm();
-
-  const handleSuspend = async () => {
-    const ok = await confirm({
-      title: "Suspend account",
-      description: `Suspend ${user?.name ?? "this user"}'s account?`,
-      confirmLabel: "Suspend",
-      cancelLabel: "Cancel",
-      destructive: true,
-    });
-
-    if (ok) {
-      alert("Suspend account");
-    }
-  };
 
   const handleBan = async () => {
     const ok = await confirm({
@@ -31,7 +18,7 @@ export default function UserAdminActions({ user, reports }) {
     });
 
     if (ok) {
-      alert("Ban account");
+      onBanUser(user.id);
     }
   };
 
@@ -44,9 +31,15 @@ export default function UserAdminActions({ user, reports }) {
             {/* <Button variant="destructive" onClick={handleSuspend}>
               Suspend Account
             </Button> */}
-            <Button variant="destructive" onClick={handleBan}>
-              Ban Account
-            </Button>
+            {user.accountStatus === "BLOCKED" ? (
+              <Button disabled variant="outline">
+                User Banned
+              </Button>
+            ) : (
+              <Button variant="destructive" onClick={handleBan}>
+                Ban Account
+              </Button>
+            )}
           </div>
           {/* <Button onClick={() => alert("Add admin note")}>
             Add Admin Note
