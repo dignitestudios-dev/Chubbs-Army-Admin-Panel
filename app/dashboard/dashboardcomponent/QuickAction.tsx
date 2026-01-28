@@ -26,7 +26,7 @@ export function QuickAction({ statsData }: { statsData: StatsData | null }) {
       const response = await axios.post("/admin/send-notifications", {
         title: "Urgent Announcement",
         description: description,
-        role: "USER",
+        role: "ADMIN",
       });
       if (response.status === 200 || response.status === 201) {
         SuccessToast("Announcement sent successfully!");

@@ -9,6 +9,23 @@ import axios from "../../../axios";
 import { ErrorToast } from "@/components/Toaster";
 import { AxiosError } from "axios";
 import { formatDate } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 interface EventData {
   id: string;
@@ -35,6 +52,10 @@ export default function EventPage() {
   const router = useRouter();
   const [events, setEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [update, setUpdate] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState("10");
+  const [totalPages, setTotalPages] = useState(1);
 
   const [selectedSection, setSelectedSection] = useState<
     "approval" | "monitoring" | "post"
@@ -56,7 +77,7 @@ export default function EventPage() {
   const fetchEvents = async (status: string) => {
     setLoading(true);
     try {
-      const params: unknown = { status };
+      const params: unknown = { status, page, limit };
       const response = await axios.get("/admin/events", { params });
 
       if (response.status === 200) {
@@ -74,20 +95,12 @@ export default function EventPage() {
     const status = getStatusForSection(selectedSection);
 
     fetchEvents(status);
-  }, [selectedSection]);
+  }, [selectedSection, update]);
 
-  const approve = (id: string) =>
-    setEvents((s) =>
-      s.map((e) =>
-        e.id === id.toString() ? { ...e, status: "ACTIVE" as const } : e,
-      ),
-    );
-  const reject = (id: string) =>
-    setEvents((s) =>
-      s.map((e) =>
-        e.id === id.toString() ? { ...e, status: "COMPLETED" as const } : e,
-      ),
-    );
+  const approve = () => setUpdate((prev) => !prev);
+
+  const reject = () => setUpdate((prev) => !prev);
+
   const edit = (id: string) => alert(`Edit event ${id} — open editor`);
   const remove = (id: string) =>
     setEvents((s) => s.filter((e) => e.id !== id.toString()));
@@ -99,6 +112,15 @@ export default function EventPage() {
   };
   const removeContent = (id: string) =>
     alert(`Remove inappropriate content for ${id}`);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePageSizeChange = (newLimit: string) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
 
   return (
     <div className="w-full space-y-6">
@@ -219,6 +241,53 @@ export default function EventPage() {
           </>
         )}
       </section>
+      <div className="flex items-center justify-between space-x-2 py-4">
+        <div className="flex items-center space-x-2">
+          <Label htmlFor="page-size" className="text-sm font-medium">
+            Show
+          </Label>
+          <Select value={limit.toString()} onValueChange={handlePageSizeChange}>
+            <SelectTrigger className="w-20 cursor-pointer" id="page-size">
+              <SelectValue placeholder={limit.toString()} />
+            </SelectTrigger>
+            <SelectContent side="top">
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="12">12</SelectItem>
+              <SelectItem value="30">30</SelectItem>
+              <SelectItem value="40">40</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center space-x-6 lg:space-x-8">
+          <div className="hidden sm:flex items-center space-x-2">
+            <p className="text-sm font-medium">Page</p>
+            <strong className="text-sm">
+              {page} of {totalPages}
+            </strong>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page <= 1}
+              className="cursor-pointer"
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page >= totalPages}
+              className="cursor-pointer"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

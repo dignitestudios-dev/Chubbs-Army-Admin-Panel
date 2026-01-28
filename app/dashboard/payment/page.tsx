@@ -41,6 +41,8 @@ interface TransactionData {
 
 export default function PaymentPage() {
   const [transactions, setTransactions] = useState<TransactionData[]>([]);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+
   const [loading, setLoading] = useState(false);
 
   const fetchTransactions = async () => {
@@ -48,7 +50,8 @@ export default function PaymentPage() {
     try {
       const response = await axios.get("/admin/transactions");
       if (response.status === 200) {
-        setTransactions(response.data.data);
+        setTransactions(response?.data?.data?.transactions);
+        setTotalRevenue(response?.data?.data?.totalRevenue || 0);
       }
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;
@@ -61,11 +64,6 @@ export default function PaymentPage() {
   useEffect(() => {
     fetchTransactions();
   }, []);
-
-  const totalRevenue = transactions.reduce(
-    (sum, t) => sum + parseFloat(t.totalAmount),
-    0,
-  );
 
   return (
     <div className="w-full space-y-6">
@@ -94,7 +92,9 @@ export default function PaymentPage() {
       <div>
         <div className="p-4 rounded-md border mb-2">
           <p className="text-sm text-muted-foreground">Total Revenue</p>
-          <p className="text-xl font-semibold">${totalRevenue.toFixed(2)}</p>
+          <p className="text-xl font-semibold">
+            ${totalRevenue?._sum?.platformFee}
+          </p>
         </div>
         {/* <Tabs value={selected} onValueChange={(v) => setSelected(v as any)}>
           <TabsList>

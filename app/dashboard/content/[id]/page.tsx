@@ -116,7 +116,7 @@ export default function ContentDetailPage({
               </div>
 
               <div className="mt-3">
-                <h2 className="text-lg font-semibold">{content?.title}</h2>
+                <h2 className="text-lg font-semibold ">{content?.title}</h2>
 
                 <p className="text-sm text-muted-foreground mt-1">
                   {content?.description ?? "--"}

@@ -175,7 +175,7 @@ export function DataTable({
                  focus:outline-none focus:ring-2 focus:ring-gray-200"
               />
             </div>
-            {/* <div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="role-filter" className="text-sm font-medium">
                 Status
               </Label>
@@ -191,11 +191,11 @@ export function DataTable({
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="ACTIVE">Active</SelectItem>
-                  <SelectItem value="SUSPENDED">Suspended</SelectItem>
-                  <SelectItem value="BANNED">Banned</SelectItem>
+                  <SelectItem value="DELETED">Deleted</SelectItem>
+                  <SelectItem value="BLOCKED">Banned</SelectItem>
                 </SelectContent>
               </Select>
-            </div> */}
+            </div>
           </div>
           <div className="rounded-md border">
             {loading ? (

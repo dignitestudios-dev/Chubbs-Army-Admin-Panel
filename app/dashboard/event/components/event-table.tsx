@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,6 +11,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import EventDetailsModal from "./EventDetailsModal";
+import axios from "@/axios";
+import { AxiosError } from "axios";
+import { ErrorToast } from "@/components/Toaster";
+import { useGlobalConfirm } from "@/components/GlobalConfirm";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 type SectionType = "approval" | "monitoring" | "post";
 
@@ -43,107 +49,283 @@ interface Props {
 export default function EventTable(props: Props) {
   const { section } = props;
   const events = props.events || [];
+  const confirm = useGlobalConfirm();
+
+  const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const openEventModal = (event: EventItem) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleApprove = async (eventId: string) => {
+    const confirmed = await confirm({
+      title: "Approve Event",
+      description: "Are you sure you want to approve this event?",
+      confirmLabel: "Approve",
+      cancelLabel: "Cancel",
+    });
+
+    if (!confirmed) return;
+
+    setLoadingId(eventId);
+    try {
+      const response = await axios.patch(
+        `/admin/publish/${eventId}`,
+        {},
+        {
+          params: {
+            status: "approved",
+          },
+        },
+      );
+      if (response.status === 200) {
+        props.onApprove?.(eventId);
+      }
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      ErrorToast(err.response?.data?.message ?? "Failed to approve event");
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleReject = async (eventId: string) => {
+    const confirmed = await confirm({
+      title: "Reject Event",
+      description: "Are you sure you want to reject this event?",
+      confirmLabel: "Reject",
+      cancelLabel: "Cancel",
+      destructive: true,
+    });
+
+    if (!confirmed) return;
+
+    setLoadingId(eventId);
+    try {
+      const response = await axios.patch(
+        `/admin/publish/${eventId}`,
+        {},
+        {
+          params: {
+            status: "rejected",
+          },
+        },
+      );
+      if (response.status === 200) {
+        props.onReject?.(eventId);
+      }
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      ErrorToast(err.response?.data?.message ?? "Failed to reject event");
+    } finally {
+      setLoadingId(null);
+    }
+  };
 
   if (section === "approval") {
     return (
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Event</TableHead>
-              <TableHead>Organizer</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {events.length ? (
-              events.map((e) => (
-                <TableRow key={e.id}>
-                  <TableCell>
-                    <div className="flex flex-col w-[150px]">
-                      <span
-                        className="font-medium line-clamp-1 cursor-help"
-                        title={e.title}
-                      >
-                        {e.title}
-                      </span>
-                      {/* <span className="text-sm text-muted-foreground">
+      <>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Event</TableHead>
+                <TableHead>Organizer</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {events.length ? (
+                events.map((e) => (
+                  <TableRow key={e.id}>
+                    <TableCell>
+                      <div className="flex flex-col ">
+                        <span
+                          className="font-medium line-clamp-1 cursor-help w-[160px] truncate"
+                          title={e.title}
+                        >
+                          {e.title}
+                        </span>
+                        {/* <span className="text-sm text-muted-foreground">
                         ID {e.id}
                       </span> */}
-                    </div>
-                  </TableCell>
-                  <TableCell>{e.organizer}</TableCell>
-                  <TableCell>{e.date}</TableCell>
-                  <TableCell>{e.location || "—"}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        e.status === "approved"
-                          ? "secondary"
-                          : e.status === "submitted"
-                            ? "outline"
-                            : "destructive"
-                      }
-                    >
-                      {e.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {e.status === "submitted" && (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => props.onViewMetrics?.(e.id)}
-                          >
-                            View
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => props.onApprove?.(e.id)}
-                          >
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => props.onReject?.(e.id)}
-                          >
-                            Reject
-                          </Button>
-                        </>
-                      )}
-                    </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{e.organizer}</TableCell>
+                    <TableCell>{e.date}</TableCell>
+                    <TableCell>
+                      <div className="w-[250px] truncate">
+                        {e.location || "—"}{" "}
+                      </div>{" "}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          e.status === "approved"
+                            ? "secondary"
+                            : e.status === "submitted"
+                              ? "outline"
+                              : "destructive"
+                        }
+                      >
+                        {e.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {e.status === "submitted" && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openEventModal(e)}
+                            >
+                              View
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => handleApprove(e.id)}
+                              disabled={loadingId === e.id}
+                            >
+                              {loadingId === e.id ? (
+                                <>
+                                  <LoadingSpinner className="mr-2 h-4 w-4" />
+                                  Approving...
+                                </>
+                              ) : (
+                                "Approve"
+                              )}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleReject(e.id)}
+                              disabled={loadingId === e.id}
+                            >
+                              {loadingId === e.id ? (
+                                <>
+                                  <LoadingSpinner className="mr-2 h-4 w-4" />
+                                  Rejecting...
+                                </>
+                              ) : (
+                                "Reject"
+                              )}
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    No submitted events.
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  No submitted events.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        <EventDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          event={selectedEvent}
+        />
+      </>
     );
   }
 
   if (section === "monitoring") {
     return (
+      <>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Event</TableHead>
+                <TableHead>RSVPs</TableHead>
+                <TableHead>Tickets</TableHead>
+                <TableHead>Attendance</TableHead>
+                <TableHead>Reports</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {events.length ? (
+                events.map((e) => (
+                  <TableRow key={e.id}>
+                    <TableCell>
+                      <div className="flex flex-col w-[150px]">
+                        <span
+                          className="font-medium line-clamp-1 cursor-help"
+                          title={e.title}
+                        >
+                          {e.title}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {e.organizer}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{e.rsvps ?? 0}</TableCell>
+                    <TableCell>{e.ticketsSold ?? 0}</TableCell>
+                    <TableCell>{e.attendance ?? 0}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          e.reports && e.reports > 0
+                            ? "destructive"
+                            : "secondary"
+                        }
+                      >
+                        {e.reports ?? 0}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" onClick={() => openEventModal(e)}>
+                          View Metrics
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    No events to monitor.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        <EventDetailsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          event={selectedEvent}
+        />
+      </>
+    );
+  }
+
+  // post-event
+  return (
+    <>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Event</TableHead>
-              <TableHead>RSVPs</TableHead>
-              <TableHead>Tickets</TableHead>
-              <TableHead>Attendance</TableHead>
+              <TableHead>Avg Rating</TableHead>
+              <TableHead>Feedback</TableHead>
               <TableHead>Reports</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -153,21 +335,17 @@ export default function EventTable(props: Props) {
               events.map((e) => (
                 <TableRow key={e.id}>
                   <TableCell>
-                    <div className="flex flex-col w-[150px]">
-                      <span
-                        className="font-medium line-clamp-1 cursor-help"
-                        title={e.title}
-                      >
-                        {e.title}
-                      </span>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{e.title}</span>
                       <span className="text-sm text-muted-foreground">
                         {e.organizer}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell>{e.rsvps ?? 0}</TableCell>
-                  <TableCell>{e.ticketsSold ?? 0}</TableCell>
-                  <TableCell>{e.attendance ?? 0}</TableCell>
+                  <TableCell>
+                    {e.ratingAvg ? e.ratingAvg.toFixed(1) : "—"}
+                  </TableCell>
+                  <TableCell>{e.feedbackCount ?? 0}</TableCell>
                   <TableCell>
                     <Badge
                       variant={
@@ -181,9 +359,17 @@ export default function EventTable(props: Props) {
                     <div className="flex items-center gap-2">
                       <Button
                         size="sm"
-                        onClick={() => props.onViewMetrics?.(e.id)}
+                        variant="ghost"
+                        onClick={() => props.onRemoveContent?.(e.id)}
                       >
-                        View Metrics
+                        Remove Content
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openEventModal(e)}
+                      >
+                        View
                       </Button>
                     </div>
                   </TableCell>
@@ -191,84 +377,19 @@ export default function EventTable(props: Props) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  No events to monitor.
+                <TableCell colSpan={5} className="h-24 text-center">
+                  No post-event items.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-    );
-  }
-
-  // post-event
-  return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Event</TableHead>
-            <TableHead>Avg Rating</TableHead>
-            <TableHead>Feedback</TableHead>
-            <TableHead>Reports</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {events.length ? (
-            events.map((e) => (
-              <TableRow key={e.id}>
-                <TableCell>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{e.title}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {e.organizer}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {e.ratingAvg ? e.ratingAvg.toFixed(1) : "—"}
-                </TableCell>
-                <TableCell>{e.feedbackCount ?? 0}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      e.reports && e.reports > 0 ? "destructive" : "secondary"
-                    }
-                  >
-                    {e.reports ?? 0}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => props.onRemoveContent?.(e.id)}
-                    >
-                      Remove Content
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => props.onViewMetrics?.(e.id)}
-                    >
-                      View
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center">
-                No post-event items.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
+      <EventDetailsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        event={selectedEvent}
+      />
+    </>
   );
 }

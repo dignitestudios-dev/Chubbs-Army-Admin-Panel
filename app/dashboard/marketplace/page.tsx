@@ -62,7 +62,7 @@ interface ServiceData {
 
 export default function MarketplacePage() {
   const [businessData, setBusinessData] = useState<any[]>([]);
-  console.log("🚀 ~ MarketplacePage ~ businessData:", businessData);
+
   const [products, setProducts] = useState<ProductData[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");

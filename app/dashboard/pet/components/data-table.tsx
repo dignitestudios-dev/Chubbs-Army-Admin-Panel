@@ -171,9 +171,9 @@ export function DataTable({
                         </Avatar>
                         <div className="flex flex-col">
                           <span className="font-medium">{pet.petName}</span>
-                          <span className="text-sm text-muted-foreground">
+                          {/* <span className="text-sm text-muted-foreground">
                             {pet.id}
-                          </span>
+                          </span> */}
                         </div>
                       </div>
                     </TableCell>
@@ -192,7 +192,7 @@ export function DataTable({
                         <span className="text-sm font-medium">
                           {pet.user.firstName} {pet.user.lastName}
                         </span>
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-sm text-muted-foreground w-[240px] truncate">
                           {pet.user.email}
                         </span>
                       </div>

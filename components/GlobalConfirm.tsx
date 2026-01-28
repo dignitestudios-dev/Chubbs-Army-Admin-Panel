@@ -30,7 +30,7 @@ type ConfirmContext = {
 };
 
 const GlobalConfirmContext = createContext<ConfirmContext | undefined>(
-  undefined
+  undefined,
 );
 
 export function GlobalConfirmProvider({
@@ -96,7 +96,7 @@ export function useGlobalConfirm() {
   const ctx = useContext(GlobalConfirmContext);
   if (!ctx)
     throw new Error(
-      "useGlobalConfirm must be used within GlobalConfirmProvider"
+      "useGlobalConfirm must be used within GlobalConfirmProvider",
     );
   return ctx.confirm;
 }
