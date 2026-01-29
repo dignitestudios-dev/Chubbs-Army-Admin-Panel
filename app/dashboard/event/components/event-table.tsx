@@ -251,7 +251,7 @@ export default function EventTable(props: Props) {
               <TableRow>
                 <TableHead>Event</TableHead>
                 <TableHead>RSVPs</TableHead>
-                <TableHead>Tickets</TableHead>
+                {/* <TableHead>Tickets</TableHead> */}
                 <TableHead>Attendance</TableHead>
                 <TableHead>Reports</TableHead>
                 <TableHead>Actions</TableHead>
@@ -262,9 +262,9 @@ export default function EventTable(props: Props) {
                 events.map((e) => (
                   <TableRow key={e.id}>
                     <TableCell>
-                      <div className="flex flex-col w-[150px]">
+                      <div className="flex flex-col ">
                         <span
-                          className="font-medium line-clamp-1 cursor-help"
+                          className="font-medium line-clamp-1 cursor-help w-[160px] truncate"
                           title={e.title}
                         >
                           {e.title}
@@ -275,7 +275,7 @@ export default function EventTable(props: Props) {
                       </div>
                     </TableCell>
                     <TableCell>{e.rsvps ?? 0}</TableCell>
-                    <TableCell>{e.ticketsSold ?? 0}</TableCell>
+                    {/* <TableCell>{e.ticketsSold ?? 0}</TableCell> */}
                     <TableCell>{e.attendance ?? 0}</TableCell>
                     <TableCell>
                       <Badge
@@ -290,7 +290,10 @@ export default function EventTable(props: Props) {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Button size="sm" onClick={() => openEventModal(e)}>
+                        <Button
+                          size="sm"
+                          onClick={() => props.onViewMetrics(e.id)}
+                        >
                           View Metrics
                         </Button>
                       </div>
@@ -336,7 +339,9 @@ export default function EventTable(props: Props) {
                 <TableRow key={e.id}>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium">{e.title}</span>
+                      <span className="font-medium line-clamp-1 cursor-help w-[160px] truncate">
+                        {e.title}
+                      </span>
                       <span className="text-sm text-muted-foreground">
                         {e.organizer}
                       </span>

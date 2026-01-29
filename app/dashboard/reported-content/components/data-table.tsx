@@ -108,6 +108,7 @@ const ReportsTable = ({
       onPageChange(currentPage + 1);
     }
   };
+
   return (
     <div>
       <div className="rounded-md border">

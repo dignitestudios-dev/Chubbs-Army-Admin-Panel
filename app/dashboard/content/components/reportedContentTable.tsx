@@ -14,8 +14,13 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import ModerationActionModal from "./ModerationActionModal";
 import { MODERATION_CONFIG } from "./modalConfig";
+import axios from "@/axios";
+import { AxiosError } from "axios";
+import { ErrorToast, SuccessToast } from "@/components/Toaster";
+import { useRouter } from "next/navigation";
 
 export default function ReportedContentTable({ data, creator }) {
+  const router = useRouter();
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalType, setModalType] = useState(null);
 
@@ -37,6 +42,82 @@ export default function ReportedContentTable({ data, creator }) {
   const closeModal = () => {
     setSelectedItem(null);
     setModalType(null);
+  };
+
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleModalConfirm = async () => {
+    if (!selectedItem || !modalType) return;
+
+    if (modalType === "reject") {
+      setIsProcessing(true);
+      try {
+        const response = await axios.patch(
+          `/admin/reports/${selectedItem.id}/mark`,
+          {},
+          {
+            params: {
+              status: "REJECTED",
+            },
+          },
+        );
+
+        if (response.status === 200) {
+          SuccessToast("Report rejected");
+          router.push("dashboard/reported-content");
+        }
+      } catch (error) {
+        const err = error as AxiosError<{ message: string }>;
+        ErrorToast(err.response?.data?.message ?? "Failed to reject report");
+      } finally {
+        setIsProcessing(false);
+        closeModal();
+      }
+
+      return;
+    }
+
+    if (modalType === "suspend") {
+      setIsProcessing(true);
+      try {
+        const response = await axios.post(
+          `/admin/users/${selectedItem?.pet?.userId}/block`,
+          {},
+          {
+            params: {
+              reportId: selectedItem?.id,
+            },
+          },
+        );
+
+        if (response.status === 201) {
+          SuccessToast("User Blocked");
+          router.push("dashboard/reported-content");
+        }
+      } catch (error) {
+        const err = error as AxiosError<{ message: string }>;
+        ErrorToast(err.response?.data?.message ?? "Failed to reject report");
+      } finally {
+        setIsProcessing(false);
+        closeModal();
+      }
+
+      return;
+    }
+
+    // fallback for other actions using config handlers
+    try {
+      setIsProcessing(true);
+      await Promise.resolve(
+        MODERATION_CONFIG[modalType].onConfirm(selectedItem),
+      );
+      SuccessToast("Action completed");
+    } catch (error) {
+      ErrorToast("Action failed");
+    } finally {
+      setIsProcessing(false);
+      closeModal();
+    }
   };
 
   return (
@@ -115,7 +196,7 @@ export default function ReportedContentTable({ data, creator }) {
                     variant="secondary"
                     onClick={() => openSuspend(item)}
                   >
-                    Ban
+                    Ban User
                   </Button>
                 </div>
               </TableCell>
@@ -131,10 +212,8 @@ export default function ReportedContentTable({ data, creator }) {
           description={MODERATION_CONFIG[modalType].description}
           confirmText={MODERATION_CONFIG[modalType].confirmText}
           confirmVariant={MODERATION_CONFIG[modalType].confirmVariant}
-          onConfirm={() => {
-            MODERATION_CONFIG[modalType].onConfirm(selectedItem);
-            closeModal();
-          }}
+          isProcessing={isProcessing}
+          onConfirm={handleModalConfirm}
         />
       )}
     </>

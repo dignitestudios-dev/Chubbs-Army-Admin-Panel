@@ -16,14 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
@@ -42,15 +35,20 @@ interface EventData {
   rsvps?: number;
   currentRSVP?: number;
   ticketsSold?: number;
-  attendance?: number;
-  reports?: number;
+  attendance?: unknown[];
+  reports?: number | null;
+  participant?: unknown[];
   ratingAvg?: number;
   feedbackCount?: number;
+  _count?: {
+    eventreport?: number;
+  };
 }
 
 export default function EventPage() {
   const router = useRouter();
   const [events, setEvents] = useState<EventData[]>([]);
+  console.log("🚀 ~ EventPage ~ events:", events);
   const [loading, setLoading] = useState(false);
   const [update, setUpdate] = useState(false);
   const [page, setPage] = useState(1);
@@ -81,7 +79,8 @@ export default function EventPage() {
       const response = await axios.get("/admin/events", { params });
 
       if (response.status === 200) {
-        setEvents(response.data.data);
+        setEvents(response?.data?.data?.events);
+        setTotalPages(response?.data?.data?.meta?.totalPages ?? 1);
       }
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;
@@ -95,7 +94,7 @@ export default function EventPage() {
     const status = getStatusForSection(selectedSection);
 
     fetchEvents(status);
-  }, [selectedSection, update]);
+  }, [selectedSection, update, page, limit]);
 
   const approve = () => setUpdate((prev) => !prev);
 
@@ -199,8 +198,8 @@ export default function EventPage() {
                 status: "approved",
                 rsvps: e?.currentRSVP,
                 ticketsSold: 0,
-                attendance: 0,
-                reports: 0,
+                attendance: e?.participant?.length ?? 0,
+                reports: e?._count?.eventreport ?? 0,
                 ratingAvg: 0,
                 feedbackCount: 0,
               }))}
@@ -228,8 +227,8 @@ export default function EventPage() {
                       : "rejected",
                 rsvps: 0,
                 ticketsSold: 0,
-                attendance: 0,
-                reports: 0,
+                attendance: e?.participant?.length ?? 0,
+                reports: e?._count?.eventreport ?? 0,
                 ratingAvg: 0,
                 feedbackCount: 0,
               }))}

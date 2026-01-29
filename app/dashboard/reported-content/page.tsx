@@ -67,10 +67,11 @@ export default function ContentPage() {
     const params: unknown = { page, limit };
     try {
       const response = await axios.get("/admin/reports", { params });
+      console.log("🚀 ~ fetchUsers ~ response:", response.data.data);
 
       if (response.status === 200) {
-        setContent(response.data.data);
-        setTotalPages(response?.data?.data?.pagination?.totalPages ?? 1);
+        setContent(response?.data?.data?.posts);
+        setTotalPages(response?.data?.data?.meta?.totalPages ?? 1);
       }
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;

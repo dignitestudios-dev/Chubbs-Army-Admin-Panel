@@ -3,10 +3,12 @@
 import axios from "@/axios";
 import { ErrorToast } from "@/components/Toaster";
 import { AxiosError } from "axios";
-import React, { use, useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Heart, MessageCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export default function ContentDetailPage({
   params,
@@ -14,7 +16,9 @@ export default function ContentDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const router = useRouter();
   const [content, setContent] = useState<any>(null);
+
   const [loading, setLoading] = useState(true);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
@@ -51,6 +55,9 @@ export default function ContentDetailPage({
             <h1 className="text-xl font-bold">Content Detail</h1>
             <div className="text-sm text-muted-foreground">
               {formatDate(content?.createdAt)}
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={() => router.back()}>Back</Button>
             </div>
           </div>
 
@@ -169,7 +176,20 @@ export default function ContentDetailPage({
                 <div className="rounded-md border p-4">
                   <div className="flex justify-between">
                     <h3 className="text-sm font-medium">Reports</h3>
-                    <p>Action</p>
+                    <Button
+                      className="cursor-pointer"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() =>
+                        router.push(
+                          `/dashboard/content/report/${content?.id}?creator=${encodeURIComponent(
+                            content?.pet?.petName,
+                          )} `,
+                        )
+                      }
+                    >
+                      View Reports
+                    </Button>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Report count:{" "}

@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useDebounce } from "@/hooks/use-debounce";
 
 interface ProductData {
   id: string;
@@ -69,15 +70,24 @@ export default function MarketplacePage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState("10");
   const [totalPages, setTotalPages] = useState(1);
+  const debouncedSearch = useDebounce(search, 500);
+
+  const handleFilterChange = (type: string, value: string) => {
+    if (type === "search") setSearch(value);
+    // else if (type === "status") setStatus(value);
+    setPage(1); // reset to first page on filter change
+  };
 
   useEffect(() => {
     const businessProfiles = async () => {
       try {
-        const response = await axios.get("/admin/businesses");
+        const params: any = { page, limit };
+        if (debouncedSearch) params.search = debouncedSearch;
+        const response = await axios.get("/admin/businesses", { params });
         if (response.status === 200) {
           console.log("Business Profiles:", response.data.data);
-          setBusinessData(response.data.data);
-          setTotalPages(response?.data?.data?.pagination?.totalPages ?? 1);
+          setBusinessData(response?.data?.data?.businesses || []);
+          setTotalPages(response?.data?.data?.meta?.totalPages ?? 1);
         }
       } catch (error) {
         const err = error as AxiosError<{ message: string }>;
@@ -87,7 +97,7 @@ export default function MarketplacePage() {
       }
     };
     businessProfiles();
-  }, []);
+  }, [page, limit, debouncedSearch]);
 
   // const fetchProducts = async () => {
   //   setLoading(true);
@@ -180,6 +190,20 @@ export default function MarketplacePage() {
     <div className="w-full space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-[22px] font-bold">Marketplace Management</h1>
+      </div>
+
+      <div className="space-y-2 sm:col-span-2 w-[400px]">
+        <Label htmlFor="search" className="text-sm font-medium">
+          Search
+        </Label>
+        <input
+          id="search"
+          type="text"
+          placeholder="Search by name or email"
+          onChange={(e) => handleFilterChange("search", e.target.value)}
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md 
+                       focus:outline-none focus:ring-2 focus:ring-gray-200"
+        />
       </div>
 
       <section className="space-y-3">

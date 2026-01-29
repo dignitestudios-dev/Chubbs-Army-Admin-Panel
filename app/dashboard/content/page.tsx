@@ -9,7 +9,8 @@ import { CreateChallengeModal } from "./components/CreateChallengeModal";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import axios from "@/axios";
 import { AxiosError } from "axios";
-import { ErrorToast } from "@/components/Toaster";
+import { ErrorToast, SuccessToast } from "@/components/Toaster";
+import ModerationActionModal from "./components/ModerationActionModal";
 import {
   Select,
   SelectContent,
@@ -95,24 +96,51 @@ export default function ContentPage() {
     setPage(1);
   };
 
-  const onEdit = (id: string) => {
-    const challenge = challenges.find((c) => c.id === id);
-    if (!challenge) return;
+  // const onEdit = (id: string) => {
+  //   const challenge = challenges.find((c) => c.id === id);
+  //   if (!challenge) return;
 
-    setSelectedChallenge(challenge);
-    setEditOpen(true);
-  };
+  //   setSelectedChallenge(challenge);
+  //   setEditOpen(true);
+  // };
 
-  function deleteChallenge(id: string) {
-    setChallenges((prevChallenges) =>
-      prevChallenges.filter((challenge) => challenge.id !== id),
-    );
+  const [confirmChallengeId, setConfirmChallengeId] = useState<string | null>(
+    null,
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  function endChallenge(id: string) {
+    setConfirmChallengeId(id);
   }
 
-  const openViewModal = (challenge: Challenge) => {
-    setSelectedChallenge(challenge);
-    setViewModal(true);
+  const closeConfirm = () => {
+    setConfirmChallengeId(null);
+    setIsDeleting(false);
   };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmChallengeId) return;
+    setIsDeleting(true);
+    try {
+      const response = await axios.delete(
+        `/admin/challenges/${confirmChallengeId}`,
+      );
+      if (response.status === 200 || response.status === 204) {
+        SuccessToast("Challenge ended");
+        setUpdate((prev) => !prev);
+      }
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      ErrorToast(err.response?.data?.message ?? "Failed to end challenge");
+    } finally {
+      closeConfirm();
+    }
+  };
+
+  // const openViewModal = (challenge: Challenge) => {
+  //   setSelectedChallenge(challenge);
+  //   setViewModal(true);
+  // };
 
   return (
     <div className="flex flex-col gap-4">
@@ -204,19 +232,19 @@ export default function ContentPage() {
 
                           {/* Actions */}
                           <div className="mt-auto flex gap-2">
-                            <Button
+                            {/* <Button
                               size="sm"
                               variant="ghost"
                               onClick={() => onEdit(c.id)}
                             >
                               Edit
-                            </Button>
+                            </Button> */}
                             <Button
                               size="sm"
                               variant="destructive"
-                              onClick={() => deleteChallenge(c.id)}
+                              onClick={() => endChallenge(c.id)}
                             >
-                              Delete
+                              End Challenge
                             </Button>
                           </div>
                         </div>
@@ -303,19 +331,19 @@ export default function ContentPage() {
 
                           {/* Actions */}
                           <div className="mt-auto flex gap-2">
-                            <Button
+                            {/* <Button
                               size="sm"
                               variant="ghost"
                               onClick={() => onEdit(c.id)}
                             >
                               Edit
-                            </Button>
+                            </Button> */}
                             <Button
                               size="sm"
                               variant="destructive"
-                              onClick={() => deleteChallenge(c.id)}
+                              onClick={() => endChallenge(c.id)}
                             >
-                              Delete
+                              End Challenge
                             </Button>
                           </div>
                         </div>
@@ -332,6 +360,19 @@ export default function ContentPage() {
                 />
               </CardContent>
             </Card>
+          )}
+
+          {confirmChallengeId && (
+            <ModerationActionModal
+              isOpen={!!confirmChallengeId}
+              onClose={closeConfirm}
+              title="End Challenge"
+              description="This will end the challenge. This action cannot be undone."
+              confirmText="End Challenge"
+              confirmVariant="destructive"
+              isProcessing={isDeleting}
+              onConfirm={handleConfirmDelete}
+            />
           )}
 
           <div className="flex items-center justify-between space-x-2 py-4">
@@ -384,7 +425,7 @@ export default function ContentPage() {
             </div>
           </div>
 
-          {editOpen && (
+          {/* {editOpen && (
             <EditChallengeModal
               open={editOpen}
               challenge={selectedChallenge}
@@ -394,7 +435,7 @@ export default function ContentPage() {
               }}
               onSuccess={() => setUpdate((prev) => !prev)}
             />
-          )}
+          )} */}
 
           {/* {viewModal && (
             <ChallengeViewModal
