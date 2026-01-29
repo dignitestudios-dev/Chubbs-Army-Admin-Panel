@@ -25,6 +25,7 @@ export type Notification = {
   id: number;
   title: string;
   message: string;
+  description: string;
   audience: "USER" | "SERVICE_PROVIDER" | "EVENT_ORGANIZER";
   sentAt?: string;
   status: "Draft" | "Sent" | "Failed";
@@ -32,32 +33,34 @@ export type Notification = {
 
 interface Props {
   notifications?: Notification[];
+  audience?: string;
+  status?: string;
+  search?: string;
+  onAudienceChange?: (v: string) => void;
+  onStatusChange?: (v: string) => void;
+  onSearchChange?: (v: string) => void;
   onResend?: (id: number) => void;
   onDelete?: (id: number) => void;
 }
 
 export default function NotificationsTable({
   notifications = [],
+  audience = "all",
+  status = "all",
+  search = "",
+  onAudienceChange,
+  onStatusChange,
+  onSearchChange,
   onResend,
   onDelete,
 }: Props) {
+  console.log("🚀 ~ NotificationsTable ~ notifications:", notifications);
   const router = useRouter();
-  const [audienceFilter, setAudienceFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [search, setSearch] = useState("");
 
-  const filtered = notifications.filter((n) => {
-    if (audienceFilter !== "all" && n.audience !== audienceFilter) return false;
-    if (statusFilter !== "all" && n.status !== statusFilter) return false;
-    if (
-      search &&
-      !`${n.id} ${n.title} ${n.message}`
-        .toLowerCase()
-        .includes(search.toLowerCase())
-    )
-      return false;
-    return true;
-  });
+  const normalizeAudience = (a: string) => {
+    if (a === "USERS") return "USER";
+    return a;
+  };
 
   return (
     <div className="space-y-4">
@@ -65,38 +68,19 @@ export default function NotificationsTable({
         <Input
           placeholder="Search by id or title"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => onSearchChange?.(e.target.value)}
         />
 
-        <Select
-          value={audienceFilter}
-          onValueChange={(v) => setAudienceFilter(v)}
-        >
+        <Select value={audience} onValueChange={(v) => onAudienceChange?.(v)}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Audience" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
-            <SelectItem value="Global">Global</SelectItem>
-            <SelectItem value="All Users">All Users</SelectItem>
-            <SelectItem value="Vendors">Vendors</SelectItem>
-            <SelectItem value="Admins">Admins</SelectItem>
+            <SelectItem value="USERS">All Users</SelectItem>
+            <SelectItem value="PET">Pets</SelectItem>
           </SelectContent>
         </Select>
-
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v)}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="Draft">Draft</SelectItem>
-            <SelectItem value="Sent">Sent</SelectItem>
-            <SelectItem value="Failed">Failed</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <div />
       </div>
 
       <div className="rounded-md border">
@@ -105,35 +89,23 @@ export default function NotificationsTable({
             <TableRow>
               <TableHead>ID</TableHead>
               <TableHead>Title</TableHead>
-              <TableHead>Audience</TableHead>
-              <TableHead>Sent At</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>Description</TableHead>
+              {/* <TableHead>Sent At</TableHead>
+              <TableHead>Status</TableHead> */}
+              {/* <TableHead>Actions</TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length ? (
-              filtered.map((n) => (
+            {notifications.length ? (
+              notifications?.map((n) => (
                 <TableRow
-                  key={n.id}
+                  key={n?.id}
                   className="hover:bg-surface cursor-pointer"
                 >
-                  <TableCell
-                    onClick={() =>
-                      router.push(`/dashboard/notifications/${n.id}`)
-                    }
-                  >
-                    #{n.id}
-                  </TableCell>
-                  <TableCell
-                    onClick={() =>
-                      router.push(`/dashboard/notifications/${n.id}`)
-                    }
-                  >
-                    {n.title}
-                  </TableCell>
-                  <TableCell>{n.audience}</TableCell>
-                  <TableCell>{n.sentAt ?? "—"}</TableCell>
+                  <TableCell>#{n?.id}</TableCell>
+                  <TableCell>{n?.title}</TableCell>
+                  <TableCell>{n?.description}</TableCell>
+                  {/* <TableCell>{n.sentAt ?? "—"}</TableCell>
                   <TableCell>
                     <Badge
                       variant={
@@ -146,8 +118,8 @@ export default function NotificationsTable({
                     >
                       {n.status}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
+                  </TableCell> */}
+                  {/* <TableCell>
                     <div className="flex items-center gap-2">
                       {n.status === "Sent" && (
                         <Button size="sm" onClick={() => onResend?.(n.id)}>
@@ -167,7 +139,7 @@ export default function NotificationsTable({
                         Delete
                       </Button>
                     </div>
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               ))
             ) : (

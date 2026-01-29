@@ -185,7 +185,7 @@ export default function StoreProductsPage({
           </Tabs>
         </div>
 
-        <div className="w-[300px]">
+        {/* <div className="w-[300px]">
           <Label htmlFor="search" className="text-sm font-medium">
             Search
           </Label>
@@ -198,7 +198,7 @@ export default function StoreProductsPage({
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md 
                          focus:outline-none focus:ring-2 focus:ring-gray-200"
           />
-        </div>
+        </div> */}
       </div>
 
       {loading ? (

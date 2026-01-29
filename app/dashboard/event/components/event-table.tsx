@@ -362,17 +362,17 @@ export default function EventTable(props: Props) {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button
+                      {/* <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => props.onRemoveContent?.(e.id)}
                       >
                         Remove Content
-                      </Button>
+                      </Button> */}
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => openEventModal(e)}
+                        onClick={() => props.onViewMetrics(e.id)}
                       >
                         View
                       </Button>

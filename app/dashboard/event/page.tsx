@@ -43,6 +43,8 @@ interface EventData {
   _count?: {
     eventreport?: number;
   };
+  averageRating?: number;
+  EventReview?: unknown[];
 }
 
 export default function EventPage() {
@@ -200,7 +202,7 @@ export default function EventPage() {
                 ticketsSold: 0,
                 attendance: e?.participant?.length ?? 0,
                 reports: e?._count?.eventreport ?? 0,
-                ratingAvg: 0,
+                ratingAvg: e?.averageRating,
                 feedbackCount: 0,
               }))}
               onViewMetrics={viewMetrics}
@@ -213,7 +215,7 @@ export default function EventPage() {
             <h2 className="text-lg font-semibold">Post-Event Management</h2>
             <EventTable
               section="post"
-              events={events.map((e) => ({
+              events={events?.map((e) => ({
                 id: e?.id,
                 title: e?.title,
                 organizer: `${e?.organizer?.firstName} ${e?.organizer?.lastName}`,
@@ -229,8 +231,8 @@ export default function EventPage() {
                 ticketsSold: 0,
                 attendance: e?.participant?.length ?? 0,
                 reports: e?._count?.eventreport ?? 0,
-                ratingAvg: 0,
-                feedbackCount: 0,
+                ratingAvg: e?.averageRating,
+                feedbackCount: e?.EventReview?.length ?? 0,
               }))}
               onEdit={edit}
               onRemoveContent={removeContent}
