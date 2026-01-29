@@ -39,9 +39,15 @@ interface TransactionData {
   };
 }
 
+interface RevenueData {
+  _sum: {
+    platformFee: number;
+  };
+}
+
 export default function PaymentPage() {
   const [transactions, setTransactions] = useState<TransactionData[]>([]);
-  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState<RevenueData | null>(null);
 
   const [loading, setLoading] = useState(false);
 
