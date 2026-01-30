@@ -10,13 +10,14 @@ import { useEffect, useState } from "react";
 import axios from "@/axios";
 import { AxiosError } from "axios";
 import { ErrorToast } from "@/components/Toaster";
+import { Button } from "@/components/ui/button";
 
 // Simple pie chart component
 const PieChart = ({ data }: { data: { label: string; value: number }[] }) => {
   const total = data.reduce((sum, d) => sum + d.value, 0);
   // eslint-disable-next-line no-var
   var currentAngle = 0;
-
+  console.log(data, "data==>");
   const colors = ["#8f8aed", "#fc83bf"];
 
   return (
@@ -110,15 +111,52 @@ const ContentAnalytics = ({ contentAnalytics }) => {
 
     fetchStats();
   }, [fromDate, toDate, range]);
+  const exportContentAnalyticsCSV = (postsData: any) => {
+    if (!postsData) return;
+
+    const rows: string[][] = [];
+
+    // Header
+    rows.push(["Metric", "Value"]);
+
+    // Totals
+    rows.push(["Total Posts", postsData.total ?? 0]);
+    rows.push(["Image Posts", postsData.breakdown?.Image ?? 0]);
+    rows.push(["Video Posts", postsData.breakdown?.Video ?? 0]);
+
+    // CSV string
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      rows.map((row) => row.join(",")).join("\n");
+
+    // Download
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "content_analytics.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Content Analytics Overview</CardTitle>
-        <CardDescription>
-          Monitor content creation and distribution
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Content Analytics Overview</CardTitle>
+          <CardDescription>
+            Monitor content creation and distribution
+          </CardDescription>
+        </div>
+
+        <Button
+          onClick={() => exportContentAnalyticsCSV(postsData)}
+          className="cursor-pointer"
+        >
+          Export CSV
+        </Button>
       </CardHeader>
+
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="p-4 rounded-lg border bg-gradient-to-br from-blue-50 to-cyan-50">

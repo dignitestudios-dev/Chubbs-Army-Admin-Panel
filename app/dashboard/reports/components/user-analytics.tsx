@@ -24,6 +24,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { Button } from "@/components/ui/button";
 
 const chartConfig = {
   desktop: {
@@ -74,6 +75,7 @@ const chartConfig = {
 // };
 
 const UserAnalytics = ({ statsData }: ChartBarMultipleProps) => {
+  
   const chartData = useMemo(() => {
     if (!statsData?.graphs?.users) return [];
 
@@ -82,14 +84,99 @@ const UserAnalytics = ({ statsData }: ChartBarMultipleProps) => {
       mobile: item.value, // Y-axis
     }));
   }, [statsData]);
+  const exportUserAnalyticsCSV = (statsData: any) => {
+    if (!statsData) return;
+
+    const rows: string[][] = [];
+
+    // Header
+    rows.push(["Section", "Metric", "Value"]);
+
+    // Users
+    rows.push(["Users", "Total Users", statsData.users.total]);
+    rows.push(["Users", "Daily Growth", statsData.users.growth.daily]);
+    rows.push(["Users", "Monthly Growth", statsData.users.growth.monthly]);
+    rows.push(["Users", "DAU", statsData.users.active.dau]);
+    rows.push(["Users", "MAU", statsData.users.active.mau]);
+
+    // Roles
+    Object.entries(statsData.users.roles).forEach(([role, value]) => {
+      rows.push(["User Roles", role, String(value)]);
+    });
+
+    // Content
+    rows.push(["Content", "Total Posts", statsData.content.totalPosts]);
+    rows.push(["Content", "Total Videos", statsData.content.totalVideos]);
+
+    // Marketplace
+    rows.push(["Marketplace", "Revenue", statsData.marketplace.revenue]);
+    rows.push([
+      "Marketplace",
+      "Total Orders",
+      statsData.marketplace.totalOrders,
+    ]);
+
+    // Ecosystem
+    rows.push([
+      "Ecosystem",
+      "Active Vendors",
+      statsData.ecosystem.activeVendors,
+    ]);
+    rows.push([
+      "Ecosystem",
+      "Active Organizers",
+      statsData.ecosystem.activeOrganizers,
+    ]);
+    rows.push(["Ecosystem", "Total Pets", statsData.ecosystem.totalPets]);
+
+    // Events
+    rows.push(["Events", "Pending Events", statsData.events.pending]);
+    rows.push(["Events", "Total Events", statsData.events.total]);
+
+    // Compliance
+    rows.push([
+      "Compliance",
+      "Reported Content Count",
+      statsData.compliance.reportedContentCount,
+    ]);
+
+    // Graph – User Growth
+    statsData.graphs.users.forEach((item: any) => {
+      rows.push(["User Growth", item.label, item.value]);
+    });
+
+    // Convert to CSV string
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      rows.map((row) => row.join(",")).join("\n");
+
+    // Download
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "user_analytics.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>User Analytics Overview</CardTitle>
-        <CardDescription>
-          Track user growth and engagement metrics
-        </CardDescription>
+      <CardHeader className="grid grid-cols-2 justify-between">
+        <div>
+          <CardTitle>User Analytics Overview</CardTitle>
+          <CardDescription>
+            Track user growth and engagement metrics
+          </CardDescription>
+        </div>
+        <div className="flex justify-end">
+          <Button
+            className="cursor-pointer"
+            onClick={() => exportUserAnalyticsCSV(statsData)}
+          >
+            Export CSV
+          </Button>{" "}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
