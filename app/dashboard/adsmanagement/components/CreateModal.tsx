@@ -38,7 +38,10 @@ const createAdSchema = Yup.object().shape({
     .max(10, "Maximum 10 images allowed")
     .required("Images are required"),
   startDate: Yup.date()
-    .min(new Date(), "Start date cannot be in the past")
+    .min(
+      new Date(new Date().toISOString().slice(0, 10)),
+      "Start date cannot be in the past",
+    )
     .required("Start date is required"),
   endDate: Yup.date()
     .min(Yup.ref("startDate"), "End date must be after start date")
@@ -334,7 +337,7 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
                         new Date(values.startDate).getTime()) /
                         (1000 * 60 * 60 * 24),
                     )}{" "}
-                    days
+                    day(s)
                   </span>
                 </div>
               </div>
