@@ -241,14 +241,14 @@ export default function ReportsDashboard() {
   }, [fromDate, toDate, range]);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 ">
       {/* Top Summary Cards */}
       <div>
         <TopSummary statsData={statsData} />
       </div>
 
       {/* Date Range and Export Controls */}
-      <div className="flex items-center gap-2 flex-wrap">
+      {/* <div className="flex items-center gap-2 flex-wrap">
         <Input type="date" className="w-auto" />
         <Input type="date" className="w-auto" />
         <Select>
@@ -266,7 +266,7 @@ export default function ReportsDashboard() {
         >
           Export CSV
         </Button>
-      </div>
+      </div> */}
 
       {/* Tabs Section */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -300,7 +300,7 @@ export default function ReportsDashboard() {
 
         {/* Reporting Analytics Tab */}
         <TabsContent value="reporting" className="space-y-4">
-          <ReportingAnalytics reportingAnalytics={reportingAnalytics} />
+          <ReportingAnalytics  />
         </TabsContent>
       </Tabs>
     </div>

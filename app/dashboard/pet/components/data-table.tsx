@@ -64,6 +64,7 @@ interface DataTableProps {
   totalPages: number;
   currentPage: number;
   pageSize: number;
+  setRankStatus: (status: string) => void;
 }
 
 export function DataTable({
@@ -78,6 +79,7 @@ export function DataTable({
   totalPages,
   currentPage,
   pageSize,
+  setRankStatus
 }: DataTableProps) {
   const router = useRouter();
 
@@ -122,6 +124,28 @@ export function DataTable({
                  focus:outline-none focus:ring-2 focus:ring-gray-200"
           />
         </div>
+          {/* <div className="space-y-2">
+            <Label htmlFor="role-filter" className="text-sm font-medium">
+              Rank Status
+            </Label>
+            <Select onValueChange={(value) => setRankStatus(value)}>
+              <SelectTrigger className="cursor-pointer w-full" id="role-filter">
+                <SelectValue placeholder="Select Rank Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="e1">e1</SelectItem>
+                <SelectItem value="e2">e2</SelectItem>
+                <SelectItem value="e3">e3</SelectItem>
+                <SelectItem value="e4">e4</SelectItem>
+                <SelectItem value="e5">e5</SelectItem>
+                <SelectItem value="e6">e6</SelectItem>
+                <SelectItem value="e7">e7</SelectItem>
+                <SelectItem value="e8">e8</SelectItem>
+                <SelectItem value="e9">e9</SelectItem>
+              </SelectContent>
+            </Select>
+          </div> */}
         {/* <div className="space-y-2">
           <Label htmlFor="status-filter" className="text-sm font-medium">
             Filter

@@ -38,13 +38,16 @@ export default function PetManagementPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [rankStatus, setRankStatus] = useState<string>("all");
 
   const fetchPets = async () => {
     setLoading(true);
     try {
       const params: any = { page, limit };
       if (search) params.search = search;
-
+      if (rankStatus && rankStatus !== "all") {
+        params.rank = rankStatus;
+      }
       const response = await axios.get("/admin/pets", { params });
 
       if (response.status === 200) {
@@ -64,7 +67,7 @@ export default function PetManagementPage() {
 
   useEffect(() => {
     fetchPets();
-  }, [search, page, limit]);
+  }, [search, page, limit, rankStatus]);
 
   const handleFilterChange = (type: string, value: string) => {
     if (type === "search") setSearch(value);
@@ -116,6 +119,7 @@ export default function PetManagementPage() {
           totalPages={totalPages}
           currentPage={page}
           pageSize={limit}
+          setRankStatus={setRankStatus}
         />
       </div>
     </div>
