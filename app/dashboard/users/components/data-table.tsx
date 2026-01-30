@@ -466,16 +466,17 @@ export function DataTable({
                                 {user.username?.[0] || "" || "U"}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="font-medium">
+                            <span className="font-medium truncate w-[200px]">
                               {user.username ?? "Organizer"}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm">
+                          <span className="block max-w-[200px] truncate text-sm">
                             {user.businessName || "—"}
                           </span>
                         </TableCell>
+
                         <TableCell>
                           <Badge
                             variant="secondary"

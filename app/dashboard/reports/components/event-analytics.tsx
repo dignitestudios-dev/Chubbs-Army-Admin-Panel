@@ -19,6 +19,63 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+
+const exportEventAnalyticsCSV = (data: any) => {
+  if (!data) return;
+
+  const rows: string[][] = [];
+
+  // Header
+  rows.push(["Event Analytics Report"]);
+  rows.push(["Generated on", new Date().toLocaleDateString()]);
+  rows.push([]); // Empty row
+
+  // Events Section
+  rows.push(["EVENTS SUMMARY"]);
+  rows.push(["Upcoming Events", data?.events?.upcoming?.toString() || "0"]);
+  rows.push(["Past Events", data?.events?.past?.toString() || "0"]);
+  rows.push(["Total Events", data?.events?.total?.toString() || "0"]);
+  rows.push([]); // Empty row
+
+  // Engagement Section
+  rows.push(["ENGAGEMENT METRICS"]);
+  rows.push(["Total RSVPs", data?.engagement?.rsvps?.toString() || "0"]);
+  rows.push([
+    "Actual Attendees",
+    data?.engagement?.attendees?.toString() || "0",
+  ]);
+  rows.push([
+    "Attendance Rate",
+    `${data?.engagement?.attendanceRate?.toString() || "0"}%`,
+  ]);
+  rows.push([]); // Empty row
+
+  // Revenue Section
+  rows.push(["REVENUE"]);
+  rows.push([
+    "Total Ticket Sales",
+    `$${data?.revenue?.ticketSales?.toFixed(2) || "0.00"}`,
+  ]);
+
+  // Create CSV content
+  const csvContent = rows
+    .map((row) => row.map((cell) => `"${cell}"`).join(","))
+    .join("\n");
+
+  // Create and download file
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `event-analytics-${new Date().toISOString().split("T")[0]}.csv`;
+  document.body.appendChild(link);
+  link.click();
+
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
 
 const EventAnalytics = ({ eventAnalytics }) => {
   const [loading, setLoading] = useState(false);
@@ -66,11 +123,19 @@ const EventAnalytics = ({ eventAnalytics }) => {
   }, [fromDate, toDate, range]);
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Event Analytics Overview</CardTitle>
-        <CardDescription>
-          Monitor event performance and attendance
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Event Analytics Overview</CardTitle>
+          <CardDescription>
+            Monitor event performance and attendance
+          </CardDescription>
+        </div>
+        <Button
+          onClick={() => exportEventAnalyticsCSV(statsData)}
+          className="cursor-pointer w-[300px]"
+        >
+          Export CSV
+        </Button>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid gap-2 sm:grid-cols-4 sm:gap-4">

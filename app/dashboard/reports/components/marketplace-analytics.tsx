@@ -29,9 +29,81 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+const exportMarketplaceAnalyticsCSV = (data: any) => {
+  if (!data) return;
+
+  const rows: string[][] = [];
+
+  // Header
+  rows.push(["Marketplace Analytics Report"]);
+  rows.push(["Generated on", new Date().toLocaleDateString()]);
+  rows.push([]); // Empty row
+
+  // Summary Section
+  rows.push(["SUMMARY"]);
+  rows.push(["Total Vendors", data?.vendors?.total?.toString() || "0"]);
+  rows.push([]); // Empty row
+
+  // Revenue Section
+  rows.push(["REVENUE"]);
+  rows.push(["Marketplace Revenue", `$${data?.revenue?.marketplace || 0}`]);
+  rows.push(["Subscriptions Revenue", `$${data?.revenue?.subscriptions || 0}`]);
+  rows.push(["Total Revenue", `$${data?.revenue?.total || 0}`]);
+  rows.push([]); // Empty row
+
+  // Products Section
+  if (data?.offerings?.products?.length) {
+    rows.push(["PRODUCTS BY CATEGORY"]);
+    rows.push(["Category", "Count"]);
+    data.offerings.products.forEach((item: any) => {
+      rows.push([item.category || "N/A", item.count?.toString() || "0"]);
+    });
+    rows.push([]); // Empty row
+  }
+
+  // Services Section
+  if (data?.offerings?.services?.length) {
+    rows.push(["SERVICES BY CATEGORY"]);
+    rows.push(["Category", "Count"]);
+    data.offerings.services.forEach((item: any) => {
+      rows.push([item.category || "N/A", item.count?.toString() || "0"]);
+    });
+    rows.push([]); // Empty row
+  }
+
+  // Orders Section
+  if (data?.orders?.length) {
+    rows.push(["ORDERS BY STATUS"]);
+    rows.push(["Status", "Count"]);
+    data.orders.forEach((item: any) => {
+      rows.push([item.status || "N/A", item.count?.toString() || "0"]);
+    });
+  }
+
+  // Create CSV content
+  const csvContent = rows
+    .map((row) => row.map((cell) => `"${cell}"`).join(","))
+    .join("\n");
+
+  // Create and download file
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `marketplace-analytics-${new Date().toISOString().split("T")[0]}.csv`;
+  document.body.appendChild(link);
+  link.click();
+
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
 
 const MarketplaceAnalytics = ({ marketplaceAnalytics }) => {
   const [marketAnalytics, setMarketAnalytics] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
@@ -106,17 +178,22 @@ const MarketplaceAnalytics = ({ marketplaceAnalytics }) => {
     //   onPageChange(currentPage + 1);
     // }
   };
-  console.log(
-    marketAnalytics?.offerings?.products,
-    "marketAnalytics?.offerings?.products",
-  );
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Marketplace Analytics Overview</CardTitle>
-        <CardDescription>
-          Track vendors, products, and marketplace performance
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Marketplace Analytics Overview</CardTitle>
+          <CardDescription>
+            Track vendors, products, and marketplace performance
+          </CardDescription>
+        </div>
+        <Button
+          onClick={() => exportMarketplaceAnalyticsCSV(marketAnalytics)}
+          className="cursor-pointer w-[300px]"
+        >
+          Export CSV
+        </Button>
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -205,26 +282,25 @@ const MarketplaceAnalytics = ({ marketplaceAnalytics }) => {
           </TabsList>
 
           <TabsContent value="Product" className="space-y-4">
-           
-              <div className="space-y-2">
-                <Label htmlFor="role-filter" className="text-sm font-medium">
-                  Vendor Status
-                </Label>
-                <Select onValueChange={(value) => setVendorStatus(value)}>
-                  <SelectTrigger
-                    className="cursor-pointer w-full"
-                    id="role-filter"
-                  >
-                    <SelectValue placeholder="Select Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="ACTIVE">Active</SelectItem>
-                    <SelectItem value="InActive">InActive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            
+            <div className="space-y-2">
+              <Label htmlFor="role-filter" className="text-sm font-medium">
+                Vendor Status
+              </Label>
+              <Select onValueChange={(value) => setVendorStatus(value)}>
+                <SelectTrigger
+                  className="cursor-pointer w-full"
+                  id="role-filter"
+                >
+                  <SelectValue placeholder="Select Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="InActive">InActive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="rounded-md border">
               {loading ? (
                 <TableSkeleton rows={2} columns={4} />
@@ -272,26 +348,25 @@ const MarketplaceAnalytics = ({ marketplaceAnalytics }) => {
           </TabsContent>
 
           <TabsContent value="Services" className="space-y-4">
-        
-              <div className="space-y-2">
-                <Label htmlFor="role-filter" className="text-sm font-medium">
-                  Vendor Status
-                </Label>
-                <Select onValueChange={(value) => setVendorStatus(value)}>
-                  <SelectTrigger
-                    className="cursor-pointer w-full"
-                    id="role-filter"
-                  >
-                    <SelectValue placeholder="Select Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ALL">All</SelectItem>
-                    <SelectItem value="ACTIVE">Active</SelectItem>
-                    <SelectItem value="InActive">InActive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-        
+            <div className="space-y-2">
+              <Label htmlFor="role-filter" className="text-sm font-medium">
+                Vendor Status
+              </Label>
+              <Select onValueChange={(value) => setVendorStatus(value)}>
+                <SelectTrigger
+                  className="cursor-pointer w-full"
+                  id="role-filter"
+                >
+                  <SelectValue placeholder="Select Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All</SelectItem>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="InActive">InActive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="rounded-md border">
               {loading ? (
                 <TableSkeleton rows={2} columns={4} />

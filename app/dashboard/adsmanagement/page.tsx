@@ -18,6 +18,14 @@ import axios from "@/axios";
 import { AxiosError } from "axios";
 import { ErrorToast } from "@/components/Toaster";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 interface AdMedia {
   fileUrl: string;
   fileName?: string;
@@ -42,11 +50,10 @@ export default function AdsManagement() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
   const [ads, setAds] = useState<Ad[]>([]);
-  console.log("🚀 ~ AdsManagement ~ ads:", ads);
+
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState("10");
   const [totalPages, setTotalPages] = useState(1);
-  console.log("🚀 ~ AdsManagement ~ totalPages:", totalPages);
   const [update, setUpdate] = useState(false);
 
   const handleCreateSuccess = () => {
@@ -87,11 +94,14 @@ export default function AdsManagement() {
     const fetchStats = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("reels/getAllAdvertise?type=ADMIN");
+        const params: any = { page, limit };
+        const response = await axios.get("reels/getAllAdvertise?type=ADMIN", {
+          params,
+        });
 
         if (response.status === 200) {
           setAds(response?.data?.data?.data);
-          // setTotalPages(response?.data?.data?.totalPages);
+          setTotalPages(response?.data?.data?.pagination?.totalPages ?? 1);
         }
       } catch (error) {
         const err = error as AxiosError<{ message: string }>;
@@ -102,7 +112,28 @@ export default function AdsManagement() {
     };
 
     fetchStats();
-  }, [update]);
+  }, [update, page, limit]);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handlePreviousPage = () => {
+    if (page > 1) {
+      handlePageChange(page - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      handlePageChange(page + 1);
+    }
+  };
+
+  const handlePageSizeChange = (newLimit: string) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
 
   return (
     <div className="min-h-screen p-6">
@@ -211,6 +242,57 @@ export default function AdsManagement() {
             </Table>
           </div>
         )}
+
+        <div className="flex items-center justify-between space-x-2 py-4">
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="page-size" className="text-sm font-medium">
+              Show
+            </Label>
+            <Select
+              value={limit.toString()}
+              onValueChange={handlePageSizeChange}
+            >
+              <SelectTrigger className="w-20 cursor-pointer" id="page-size">
+                <SelectValue placeholder={limit.toString()} />
+              </SelectTrigger>
+              <SelectContent side="top">
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="12">12</SelectItem>
+                <SelectItem value="30">30</SelectItem>
+                <SelectItem value="40">40</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center space-x-6 lg:space-x-8">
+            <div className="hidden sm:flex items-center space-x-2">
+              <p className="text-sm font-medium">Page</p>
+              <strong className="text-sm">
+                {page} of {totalPages}
+              </strong>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePreviousPage}
+                disabled={page <= 1}
+                className="cursor-pointer"
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextPage}
+                disabled={page >= totalPages}
+                className="cursor-pointer"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Create Ad Modal */}

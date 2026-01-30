@@ -18,6 +18,58 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+
+const exportReportingAnalyticsCSV = (data: any) => {
+  if (!data) return;
+
+  const rows: string[][] = [];
+
+  // Header
+  rows.push(["Reporting Analytics Report"]);
+  rows.push(["Generated on", new Date().toLocaleDateString()]);
+  rows.push([]); // Empty row
+
+  // Totals Section
+  rows.push(["REPORTING TOTALS"]);
+  rows.push(["Reported Pets", data?.totals?.reportedPets?.toString() || "0"]);
+  rows.push(["Reported Content", data?.totals?.reportedContent?.toString() || "0"]);
+  rows.push(["Blocked Users", data?.totals?.blockedUsers?.toString() || "0"]);
+
+  // Calculate block rate
+  const blockRate = data?.totals?.reportedPets
+    ? ((data.totals.blockedUsers / data.totals.reportedPets) * 100).toFixed(1)
+    : "0.0";
+  rows.push(["Block Rate", `${blockRate}%`]);
+  rows.push([]); // Empty row
+
+  // Breakdown Section
+  rows.push(["REPORT BREAKDOWN BY TYPE"]);
+  rows.push(["Report Type", "Count"]);
+  rows.push(["Pet Reports", data?.breakdown?.petReports?.toString() || "0"]);
+  rows.push(["Post Reports", data?.breakdown?.postReports?.toString() || "0"]);
+  rows.push(["Post Comment Reports", data?.breakdown?.postCommentReports?.toString() || "0"]);
+  rows.push(["Event Reports", data?.breakdown?.eventReports?.toString() || "0"]);
+  rows.push(["Event Post Reports", data?.breakdown?.eventPostReports?.toString() || "0"]);
+  rows.push(["Event Post Comment Reports", data?.breakdown?.eventPostCommentReports?.toString() || "0"]);
+  rows.push(["Chat Room Reports", data?.breakdown?.chatRoomReports?.toString() || "0"]);
+
+  // Create CSV content
+  const csvContent = rows.map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
+
+  // Create and download file
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `reporting-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(link);
+  link.click();
+
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
 
 interface ReportingAnalyticsResponse {
   totals: {
@@ -48,6 +100,7 @@ const ReportingAnalytics = () => {
   const [statsData, setStatsData] = useState<ReportingAnalyticsResponse | null>(
     null,
   );
+  console.log("🚀 ~ ReportingAnalytics ~ statsData:", statsData);
   const [loading, setLoading] = useState(true);
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
@@ -103,11 +156,19 @@ const ReportingAnalytics = () => {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Reporting Analytics Overview</CardTitle>
-        <CardDescription>
-          Monitor reported content, pets, and blocked users
-        </CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Reporting Analytics Overview</CardTitle>
+          <CardDescription>
+            Monitor reported content, pets, and blocked users
+          </CardDescription>
+        </div>
+        <Button
+          onClick={() => exportReportingAnalyticsCSV(statsData)}
+          className="cursor-pointer w-[300px]"
+        >
+          Export CSV
+        </Button>
       </CardHeader>
 
       <CardContent className="space-y-6">
