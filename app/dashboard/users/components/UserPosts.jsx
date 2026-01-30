@@ -45,18 +45,18 @@ export default function UserPosts({ posts: initialPosts, onDeletePost }) {
         </div>
         <div className="h-64 overflow-y-auto border rounded-md">
           <ul className="divide-y divide-gray-200 px-2">
-            {posts.map((post, i) => (
+            {posts?.map((post, i) => (
               <li
-                key={post.id ?? i}
+                key={post?.id ?? i}
                 className="py-2 flex justify-between items-center"
               >
                 <div className="flex items-center space-x-4">
-                  <span className="text-[18px]">{post.title}</span>
+                  <span className="text-[18px]">{post?.title || "--"}</span>
                   <span className="text-sm text-gray-500">
-                    {post.totalLikes} Likes
+                    {post?.totalLikes} Likes
                   </span>
                   <span className="text-sm text-gray-500">
-                    {post.totalComments} Comments
+                    {post?.totalComments} Comments
                   </span>
                 </div>
                 <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -19,37 +19,171 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import TopSummary from "./top-summary";
+import axios from "@/axios";
+import { AxiosError } from "axios";
+import { ErrorToast } from "@/components/Toaster";
+import UserAnalytics from "./user-analytics";
+import ContentAnalytics from "./content-analytics";
+import MarketplaceAnalytics from "./marketplace-analytics";
+import EventAnalytics from "./event-analytics";
+import ReportingAnalytics from "./reporting-analytics";
+
+// Types
+type GrowthData = {
+  date: string;
+  users: number;
+};
+
+type Revenue = {
+  marketplace: number;
+  subscriptions: number;
+  ads: number;
+};
+
+type UserAnalytics = {
+  totalUsers: number;
+  growthTrends: GrowthData[];
+};
+
+type ContentAnalytics = {
+  totalPosts: number;
+  totalVideos: number;
+  contentDistribution: {
+    photos: number;
+    videos: number;
+  };
+};
+
+type MarketplaceAnalytics = {
+  totalVendors: number;
+  totalProducts: number;
+  orders: {
+    pending: number;
+    completed: number;
+    cancelled: number;
+  };
+  revenue: {
+    byProduct: number;
+    byService: number;
+    marketplace: number;
+    subscriptions: number;
+  };
+  vendorRatings: {
+    vendorName: string;
+    rating: number;
+  }[];
+};
+
+type EventAnalytics = {
+  totalEvents: {
+    upcoming: number;
+    past: number;
+  };
+  rsvpVsAttendance: {
+    rsvps: number;
+    attendees: number;
+  };
+  eventRevenue: number;
+};
+
+type ReportingAnalytics = {
+  reportedUsers: number;
+  reportedContent: number;
+  blockedUsers: number;
+};
+
+// Mock data
+const growth: GrowthData[] = [
+  { date: "2026-01-01", users: 120 },
+  { date: "2026-01-02", users: 150 },
+  { date: "2026-01-03", users: 170 },
+  { date: "2026-01-15", users: 220 },
+  { date: "2026-01-30", users: 285 },
+];
 
 function toCSV(rows: any[], columns: string[]) {
   const header = columns.join(",");
   const lines = rows.map((r) =>
-    columns.map((c) => JSON.stringify(r[c] ?? "")).join(",")
+    columns.map((c) => JSON.stringify(r[c] ?? "")).join(","),
   );
   return [header, ...lines].join("\n");
 }
 
 export default function ReportsDashboard() {
-  // mock data
-  const growth = [
-    { date: "2026-01-01", users: 120 },
-    { date: "2026-01-02", users: 150 },
-    { date: "2026-01-03", users: 170 },
-  ];
+  const [activeTab, setActiveTab] = useState<string>("user");
 
-  const retention = { retention30: 0.42, churn30: 0.08 };
-  const engagement = { dailyActive: 3400, avgSession: "6m" };
+  const revenue: Revenue = {
+    marketplace: 12450.5,
+    subscriptions: 3490.0,
+    ads: 870.0,
+  };
 
-  const topPosts = [
-    { id: 1, title: "How to train a dog", views: 12000, category: "Pets" },
-    { id: 2, title: "Best cat toys", views: 9800, category: "Products" },
-  ];
+  const userAnalytics: UserAnalytics = {
+    totalUsers: 285,
+    growthTrends: growth,
+  };
 
-  const revenue = { marketplace: 12450.5, subscriptions: 3490.0, ads: 870.0 };
+  const contentAnalytics: ContentAnalytics = {
+    totalPosts: 1240,
+    totalVideos: 385,
+    contentDistribution: {
+      photos: 855,
+      videos: 385,
+    },
+  };
+
+  const marketplaceAnalytics: MarketplaceAnalytics = {
+    totalVendors: 45,
+    totalProducts: 320,
+    orders: {
+      pending: 28,
+      completed: 412,
+      cancelled: 15,
+    },
+    revenue: {
+      byProduct: 8200.5,
+      byService: 4250.0,
+      marketplace: 12450.5,
+      subscriptions: 3490.0,
+    },
+    vendorRatings: [
+      { vendorName: "Pet Paradise", rating: 4.8 },
+      { vendorName: "Doggy Delights", rating: 4.6 },
+      { vendorName: "Feline Friends", rating: 4.9 },
+    ],
+  };
+
+  const eventAnalytics: EventAnalytics = {
+    totalEvents: {
+      upcoming: 12,
+      past: 35,
+    },
+    rsvpVsAttendance: {
+      rsvps: 450,
+      attendees: 387,
+    },
+    eventRevenue: 5680.0,
+  };
+
+  const reportingAnalytics: ReportingAnalytics = {
+    reportedUsers: 23,
+    reportedContent: 67,
+    blockedUsers: 8,
+  };
 
   const exportCSV = (
     rows: any[],
     columns: string[],
-    filename = "report.csv"
+    filename = "report.csv",
   ) => {
     const csv = toCSV(rows, columns);
     const blob = new Blob([csv], { type: "text/csv" });
@@ -61,152 +195,114 @@ export default function ReportsDashboard() {
     URL.revokeObjectURL(url);
   };
 
+  // FOR top stats data fetching
+
+  const [statsData, setStatsData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [fromDate, setFromDate] = useState<string>("");
+  const [toDate, setToDate] = useState<string>("");
+  const [range, setRange] = useState<string>("");
+
+  const toISOStart = (date: string) =>
+    new Date(`${date}T00:00:00.000Z`).toISOString();
+
+  const toISOEnd = (date: string) =>
+    new Date(`${date}T23:59:59.999Z`).toISOString();
+  const today = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoading(true);
+      try {
+        let params = {};
+        if (fromDate && toDate) {
+          params = {
+            fromDate: toISOStart(fromDate),
+            toDate: toISOEnd(toDate),
+          };
+        } else if (range) {
+          params = { range };
+        }
+
+        const response = await axios.get("/admin/metrics", { params });
+
+        if (response.status === 200) {
+          setStatsData(response.data.data);
+        }
+      } catch (error) {
+        const err = error as AxiosError<{ message: string }>;
+        ErrorToast(err.response?.data?.message ?? "Failed to fetch stats data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [fromDate, toDate, range]);
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="p-4 rounded-md border">
-          <h3 className="font-semibold">Growth Trends</h3>
-          <div className="mt-2 text-sm">
-            Recent users: {growth[growth.length - 1].users}
-          </div>
-          <div className="mt-2 text-sm">
-            Retention (30d): {(retention.retention30 * 100).toFixed(1)}%
-          </div>
-        </div>
-
-        {/* <div className="p-4 rounded-md border">
-          <h3 className="font-semibold">Engagement</h3>
-          <div className="mt-2 text-sm">
-            Daily Active: {engagement.dailyActive}
-          </div>
-          <div className="mt-2 text-sm">
-            Avg Session: {engagement.avgSession}
-          </div>
-        </div> */}
-
-        <div className="p-4 rounded-md border">
-          <h3 className="font-semibold">Revenue</h3>
-          <div className="mt-2 text-sm">
-            Marketplace: ${revenue.marketplace.toFixed(2)}
-          </div>
-          <div className="mt-2 text-sm">
-            Subscriptions: ${revenue.subscriptions.toFixed(2)}
-          </div>
-          {/* <div className="mt-2 text-sm">Ads: ${revenue.ads.toFixed(2)}</div> */}
-        </div>
+    <div className="space-y-6 p-6">
+      {/* Top Summary Cards */}
+      <div>
+        <TopSummary statsData={statsData} />
       </div>
 
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Input type="date" />
-          <Input type="date" />
-          <Select>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Preset" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="last7">Last 7 days</SelectItem>
-              <SelectItem value="last30">Last 30 days</SelectItem>
-              <SelectItem value="thisMonth">This month</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            onClick={() => exportCSV(growth, ["date", "users"], "growth.csv")}
-          >
-            Export CSV
-          </Button>
-          {/* <Button
-            variant="ghost"
-            onClick={() =>
-              alert("Export PDF - implement backend or client PDF lib")
-            }
-          >
-            Export PDF
-          </Button> */}
-        </div>
+      {/* Date Range and Export Controls */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Input type="date" className="w-auto" />
+        <Input type="date" className="w-auto" />
+        <Select>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Preset" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="last7">Last 7 days</SelectItem>
+            <SelectItem value="last30">Last 30 days</SelectItem>
+            <SelectItem value="thisMonth">This month</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          onClick={() => exportCSV(growth, ["date", "users"], "growth.csv")}
+        >
+          Export CSV
+        </Button>
+      </div>
 
-        <div className="rounded-md border">
-          <div className="p-4">
-            <h3 className="font-semibold">User Analytics</h3>
-            <div className="mt-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Metric</TableHead>
-                    <TableHead>Value</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>Retention (30d)</TableCell>
-                    <TableCell>
-                      {(retention.retention30 * 100).toFixed(1)}%
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Churn (30d)</TableCell>
-                    <TableCell>
-                      {(retention.churn30 * 100).toFixed(1)}%
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Tabs Section */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="user">User Analytics</TabsTrigger>
+          <TabsTrigger value="content">Content Analytics</TabsTrigger>
+          <TabsTrigger value="marketplace">Marketplace Analytics</TabsTrigger>
+          <TabsTrigger value="event">Event Analytics</TabsTrigger>
+          <TabsTrigger value="reporting">Reporting Analytics</TabsTrigger>
+        </TabsList>
 
-      <section className="space-y-3">
-        <h3 className="font-semibold">Content Analytics</h3>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Post</TableHead>
-                <TableHead>Views</TableHead>
-                <TableHead>Category</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {topPosts.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell>{p.title}</TableCell>
-                  <TableCell>{p.views}</TableCell>
-                  <TableCell>{p.category}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
+        {/* User Analytics Tab */}
+        <TabsContent value="user" className="space-y-4">
+          <UserAnalytics statsData={statsData} />
+        </TabsContent>
 
-      <section className="space-y-3">
-        <h3 className="font-semibold">Revenue Analytics</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 rounded-md border">
-            <div className="text-sm text-muted-foreground">
-              Marketplace Revenue
-            </div>
-            <div className="text-xl font-semibold">
-              ${revenue.marketplace.toFixed(2)}
-            </div>
-          </div>
-          <div className="p-4 rounded-md border">
-            <div className="text-sm text-muted-foreground">
-              Subscription Revenue
-            </div>
-            <div className="text-xl font-semibold">
-              ${revenue.subscriptions.toFixed(2)}
-            </div>
-          </div>
-          {/* <div className="p-4 rounded-md border">
-            <div className="text-sm text-muted-foreground">Ad Revenue</div>
-            <div className="text-xl font-semibold">
-              ${revenue.ads.toFixed(2)}
-            </div>
-          </div> */}
-        </div>
-      </section>
+        {/* Content Analytics Tab */}
+        <TabsContent value="content" className="space-y-4">
+          <ContentAnalytics contentAnalytics={contentAnalytics} />
+        </TabsContent>
+
+        {/* Marketplace Analytics Tab */}
+        <TabsContent value="marketplace" className="space-y-4">
+          <MarketplaceAnalytics marketplaceAnalytics={marketplaceAnalytics} />
+        </TabsContent>
+
+        {/* Event Analytics Tab */}
+        <TabsContent value="event" className="space-y-4">
+          <EventAnalytics eventAnalytics={eventAnalytics} />
+        </TabsContent>
+
+        {/* Reporting Analytics Tab */}
+        <TabsContent value="reporting" className="space-y-4">
+          <ReportingAnalytics reportingAnalytics={reportingAnalytics} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

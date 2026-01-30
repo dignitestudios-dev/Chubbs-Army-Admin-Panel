@@ -59,6 +59,9 @@ declare global {
       events?: EventGraphPoint[];
       users?: GraphPoint[];
     };
+    users?: {
+      total: number;
+    };
   }
 
   // interface StatsData {

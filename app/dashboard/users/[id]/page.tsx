@@ -76,12 +76,23 @@ export default function UserDetailPage() {
   };
 
   const handleBanUser = async (userId: string) => {
-    console.log("🚀 ~ handleBanUser ~ userId:", userId);
     try {
       const response = await axios.post(`/admin/users/${userId}/block`);
-      console.log("🚀 ~ handleBanUser ~ response:", response);
       if (response.status === 200 || response.status === 201) {
         SuccessToast("User banned successfully");
+        setUpdate((prev) => !prev);
+      }
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      ErrorToast(err.response?.data?.message ?? "Failed to ban user");
+    }
+  };
+
+  const handleUnBanUser = async (userId: string) => {
+    try {
+      const response = await axios.post(`/admin/users/${userId}/unblock`);
+      if (response.status === 200 || response.status === 201) {
+        SuccessToast("User unbanned successfully");
         setUpdate((prev) => !prev);
       }
     } catch (error) {
@@ -445,6 +456,7 @@ export default function UserDetailPage() {
             user={transformedUser}
             reports={userData?.reports || []}
             onBanUser={handleBanUser}
+            onUnBanUser={handleUnBanUser}
           />
         </>
       )}

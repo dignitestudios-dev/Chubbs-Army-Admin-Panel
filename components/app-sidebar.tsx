@@ -106,6 +106,11 @@ const data = {
           url: "/dashboard/reports",
           icon: ClipboardMinus,
         },
+        {
+          title: "Ads Banner",
+          url: "/dashboard/adsmanagement",
+          icon: Megaphone,
+        },
         // {
         //   title: "System Settings",
         //   url: "/dashboard/settings",

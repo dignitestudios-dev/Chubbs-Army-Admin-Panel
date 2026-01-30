@@ -30,6 +30,7 @@ const Dashboard = () => {
 
   const toISOEnd = (date: string) =>
     new Date(`${date}T23:59:59.999Z`).toISOString();
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -71,14 +72,24 @@ const Dashboard = () => {
             <Input
               type="date"
               value={fromDate}
+              max={today}
               onChange={(e) => {
-                setFromDate(e.target.value);
-                if (e.target.value) setRange("");
+                const value = e.target.value;
+                setFromDate(value);
+
+                // reset toDate if it becomes invalid
+                if (toDate && value && toDate < value) {
+                  setToDate("");
+                }
+
+                if (value) setRange("");
               }}
             />
 
             <Input
               type="date"
+              min={fromDate || undefined}
+              max={today}
               value={toDate}
               onChange={(e) => {
                 setToDate(e.target.value);

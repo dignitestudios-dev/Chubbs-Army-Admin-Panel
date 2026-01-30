@@ -39,7 +39,7 @@ interface User {
   joinedAt: string;
   name?: string;
   plan?: { duration: string }[];
-  numberOfPetProfiles?: number;
+  petProfiles?: number;
   username?: string;
   businessName?: string;
   products?: string; // Add other fields as needed
@@ -251,7 +251,7 @@ export function DataTable({
                         </TableCell>
                         <TableCell>
                           <span className="text-sm font-medium">
-                            {user.numberOfPetProfiles || 0}
+                            {user.petProfiles || 0}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -332,7 +332,6 @@ export function DataTable({
                     <TableHead>Status</TableHead>
                     <TableHead>Products</TableHead>
                     <TableHead>Services</TableHead>
-
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>

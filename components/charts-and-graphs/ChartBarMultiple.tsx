@@ -41,6 +41,7 @@ export function ChartBarMultiple({ statsData }: ChartBarMultipleProps) {
       desktop: item.created,
     }));
   }, [statsData]);
+  console.log("🚀 ~ ChartBarMultiple ~ chartData:", chartData);
 
   return (
     <Card>

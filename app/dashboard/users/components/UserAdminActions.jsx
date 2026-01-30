@@ -4,8 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGlobalConfirm } from "@/components/GlobalConfirm";
 
-export default function UserAdminActions({ user, reports, onBanUser }) {
-  console.log("🚀 ~ UserAdminActions ~ user:", user);
+export default function UserAdminActions({
+  user,
+  reports,
+  onBanUser,
+  onUnBanUser,
+}) {
   const confirm = useGlobalConfirm();
 
   const handleBan = async () => {
@@ -22,6 +26,20 @@ export default function UserAdminActions({ user, reports, onBanUser }) {
     }
   };
 
+  const handleUnBan = async () => {
+    const ok = await confirm({
+      title: "Unban account",
+      description: `Permanently unban ${user?.name ?? "this user"}?`,
+      confirmLabel: "Unban",
+      cancelLabel: "Cancel",
+      destructive: true,
+    });
+
+    if (ok) {
+      onUnBanUser(user.id);
+    }
+  };
+
   return (
     <Card>
       <CardContent className="space-y-3">
@@ -32,8 +50,8 @@ export default function UserAdminActions({ user, reports, onBanUser }) {
               Suspend Account
             </Button> */}
             {user.accountStatus === "BLOCKED" ? (
-              <Button disabled variant="outline">
-                User Banned
+              <Button variant="outline" onClick={handleUnBan}>
+                Unban User
               </Button>
             ) : (
               <Button variant="destructive" onClick={handleBan}>
