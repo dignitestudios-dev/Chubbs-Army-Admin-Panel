@@ -12,14 +12,18 @@ import {
 } from "@/components/ui/dialog";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import axios from "axios";
+import axios from "@/axios";
 import { AxiosError } from "axios";
-import { X, Upload, ImagePlus } from "lucide-react";
+import { X, ImagePlus } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { ErrorToast, SuccessToast } from "@/components/Toaster";
 
 interface CreateAdFormValues {
   images: File[];
   startDate: string;
   endDate: string;
+  title: string;
+  description: string;
 }
 
 interface Props {
@@ -45,22 +49,13 @@ const createAdValues: CreateAdFormValues = {
   images: [],
   startDate: "",
   endDate: "",
-};
-
-// Toast functions (replace with your actual toast implementation)
-const SuccessToast = (message: string) => {
-  console.log("Success:", message);
-  // Implement your toast here
-};
-
-const ErrorToast = (message: string) => {
-  console.error("Error:", message);
-  // Implement your toast here
+  title: "",
+  description: "",
 };
 
 export function CreateAdModal({ open, onClose, onSuccess }: Props) {
-  const [loading, setLoading] = useState(false);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   const {
     values,
@@ -82,16 +77,19 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
 
       // Append all images
       values.images.forEach((image, index) => {
-        formData.append(`images`, image);
+        formData.append(`media`, image);
       });
 
-      formData.append("startDate", new Date(values.startDate).toISOString());
-      formData.append("endDate", new Date(values.endDate).toISOString());
+      formData.append("startDate", values.startDate);
+      formData.append("endDate", values.endDate);
+      formData.append(`title`, values.title);
+      formData.append(`description`, values.description);
+      formData.append(`mediaType`, "Image");
 
       try {
-        setLoading(true);
+        setUploading(true);
 
-        const response = await axios.post("/admin/createAd", formData, {
+        const response = await axios.post("admin/createAdvertise", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -106,7 +104,7 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
         const err = error as AxiosError<{ message: string }>;
         ErrorToast(err.response?.data?.message ?? "Failed to create ad");
       } finally {
-        setLoading(false);
+        setUploading(false);
       }
     },
   });
@@ -150,13 +148,45 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+          <DialogTitle className="text-2xl font-bold">
             Create New Ad
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                type="text"
+                name="title"
+                placeholder="Enter ad title"
+                value={values.title}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                required
+              />
+              {errors.title && touched.title && (
+                <p className="text-red-600 text-sm">{errors.title}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                placeholder="Enter challenge description"
+                value={values.description}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                required
+              />
+              {errors.description && touched.description && (
+                <p className="text-red-600 text-sm">{errors.description}</p>
+              )}
+            </div>
             {/* Image Upload Section */}
             <div className="space-y-3">
               <Label htmlFor="images" className="text-base font-semibold">
@@ -179,7 +209,7 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
                         alt={`Preview ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200" />
+                      {/* <div className="absolute  duration-200" /> */}
                       <button
                         type="button"
                         onClick={() => removeImage(index)}
@@ -215,11 +245,10 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
                   >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <div className="w-12 h-12 mb-3 bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
-                        <ImagePlus className="h-6 w-6 text-indigo-600" />
+                        <ImagePlus className="h-6 w-6 " />
                       </div>
                       <p className="mb-1 text-sm font-semibold text-gray-700">
-                        <span className="text-indigo-600">Click to upload</span>{" "}
-                        or drag and drop
+                        <span>Click to upload</span>
                       </p>
                       <p className="text-xs text-gray-500">
                         PNG, JPG, JPEG or WEBP (MAX. 10 images)
@@ -251,12 +280,12 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
                 </Label>
                 <Input
                   id="startDate"
-                  type="datetime-local"
+                  type="date"
                   name="startDate"
                   value={values.startDate}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  min={new Date().toISOString().slice(0, 16)}
+                  min={new Date().toISOString().slice(0, 10)}
                   className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
                   required
                 />
@@ -273,13 +302,13 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
                 </Label>
                 <Input
                   id="endDate"
-                  type="datetime-local"
+                  type="date"
                   name="endDate"
                   value={values.endDate}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   min={
-                    values.startDate || new Date().toISOString().slice(0, 16)
+                    values.startDate || new Date().toISOString().slice(0, 10)
                   }
                   className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
                   required
@@ -318,16 +347,16 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
                 variant="outline"
                 onClick={handleClose}
                 className="flex-1"
-                disabled={loading}
+                disabled={uploading}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-                disabled={loading || values.images.length === 0}
+                className="flex-1 shadow-lg hover:shadow-xl transition-all duration-200"
+                disabled={uploading || values.images.length === 0}
               >
-                {loading ? (
+                {uploading ? (
                   <span className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     Creating...
