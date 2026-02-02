@@ -53,9 +53,7 @@ export default function ContentDetailPage({
         <>
           <div className="flex items-start justify-between">
             <h1 className="text-xl font-bold">Content Detail</h1>
-            <div className="text-sm text-muted-foreground">
-              {formatDate(content?.createdAt)}
-            </div>
+
             <div className="flex gap-2">
               <Button onClick={() => router.back()}>Back</Button>
             </div>
@@ -66,7 +64,9 @@ export default function ContentDetailPage({
               <div className="rounded-md overflow-hidden border bg-muted relative">
                 {content?.media && content?.media?.length > 0 ? (
                   <>
-                    {content?.mediaType === "Image" ? (
+                    {content?.media[currentMediaIndex]?.fileType?.startsWith(
+                      "image/",
+                    ) ? (
                       <img
                         src={content.media[currentMediaIndex].fileUrl}
                         alt={content.media[currentMediaIndex].fileName}
@@ -123,6 +123,9 @@ export default function ContentDetailPage({
               </div>
 
               <div className="mt-3">
+                <div className="text-sm text-muted-foreground">
+                  {formatDate(content?.createdAt)}
+                </div>
                 <h2 className="text-lg font-semibold ">{content?.title}</h2>
 
                 <p className="text-sm text-muted-foreground mt-1">

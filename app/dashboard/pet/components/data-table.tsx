@@ -79,7 +79,7 @@ export function DataTable({
   totalPages,
   currentPage,
   pageSize,
-  setRankStatus
+  setRankStatus,
 }: DataTableProps) {
   const router = useRouter();
 
@@ -124,7 +124,7 @@ export function DataTable({
                  focus:outline-none focus:ring-2 focus:ring-gray-200"
           />
         </div>
-          {/* <div className="space-y-2">
+        {/* <div className="space-y-2">
             <Label htmlFor="role-filter" className="text-sm font-medium">
               Rank Status
             </Label>
@@ -183,18 +183,18 @@ export function DataTable({
 
             <TableBody>
               {pets?.length ? (
-                pets.map((pet) => (
-                  <TableRow key={pet.id}>
+                pets?.map((pet) => (
+                  <TableRow key={pet?.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
                           <AvatarFallback className="text-xs font-medium">
-                            {(pet.petName?.[0] || "") +
-                              (pet.user?.firstName?.[0] || "") || "P"}
+                            {(pet?.petName?.[0] || "") +
+                              (pet?.user?.firstName?.[0] || "") || "P"}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                          <span className="font-medium">{pet.petName}</span>
+                          <span className="font-medium">{pet?.petName}</span>
                           {/* <span className="text-sm text-muted-foreground">
                             {pet.id}
                           </span> */}
@@ -206,30 +206,30 @@ export function DataTable({
                       <span className="text-sm">Unknown</span>
                     </TableCell> */}
                     <TableCell>
-                      <span className="text-sm">{pet.breed}</span>
+                      <span className="text-sm">{pet?.breed}</span>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm">{calculateAge(pet.dob)}</span>
+                      <span className="text-sm">{calculateAge(pet?.dob)}</span>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="text-sm font-medium">
-                          {pet.user.firstName} {pet.user.lastName}
+                          {pet?.user?.firstName} {pet?.user?.lastName}
                         </span>
                         <span className="text-sm text-muted-foreground w-[240px] truncate">
-                          {pet.user.email}
+                          {pet?.user?.email}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge
                         variant={
-                          pet._count.reportedPets > 0
+                          pet?._count?.reportedPets > 0
                             ? "destructive"
                             : "secondary"
                         }
                       >
-                        {pet._count.reportedPets}
+                        {pet?._count?.reportedPets}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -239,7 +239,7 @@ export function DataTable({
                           size="icon"
                           className="h-8 w-8 cursor-pointer"
                           onClick={() =>
-                            router.push(`/dashboard/pet/${pet.id}`)
+                            router.push(`/dashboard/pet/${pet?.id}`)
                           }
                         >
                           <Eye className="size-4" />

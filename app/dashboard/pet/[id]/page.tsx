@@ -89,8 +89,8 @@ export default function PetDetailPage({
             <div className="flex items-center gap-4">
               <div className="relative">
                 <img
-                  src={petData.profileUrl || "/default-pet-avatar.png"}
-                  alt={`${petData.petName} profile`}
+                  src={petData?.profileUrl || "/default-pet-avatar.png"}
+                  alt={`${petData?.petName} profile`}
                   className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
                   onError={(e) => {
                     e.currentTarget.src = "/default-pet-avatar.png";
@@ -98,9 +98,9 @@ export default function PetDetailPage({
                 />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">{petData.petName}</h1>
+                <h1 className="text-2xl font-bold">{petData?.petName}</h1>
                 <p className="text-sm text-muted-foreground">
-                  {petData.breed} • {calculateAge(petData.dob)}
+                  {petData?.breed} • {calculateAge(petData?.dob)}
                 </p>
               </div>
             </div>
@@ -110,8 +110,8 @@ export default function PetDetailPage({
           </div>
           <div>
             <p className="text-sm mt-2">
-              Owner: {petData.user.firstName} {petData.user.lastName} (@
-              {petData.user.email})
+              Owner: {petData?.user?.firstName} {petData?.user?.lastName} (@
+              {petData?.user?.email})
             </p>
           </div>
 
@@ -259,15 +259,15 @@ function PostList({
 
   return (
     <div className="space-y-3 h-64 overflow-y-auto">
-      {posts.map((post) => (
+      {posts?.map((post) => (
         <div
-          key={post.id}
+          key={post?.id}
           className="flex items-center justify-between border rounded p-3"
         >
           <div>
-            <div className="font-medium">{post.title}</div>
+            <div className="font-medium">{post?.title}</div>
             <div className="text-sm text-muted-foreground">
-              {post.totalLikes} likes • {post.totalComments} comments
+              {post?.totalLikes} likes • {post?.totalComments} comments
             </div>
           </div>
           <div>
@@ -275,12 +275,12 @@ function PostList({
               variant="ghost"
               size="icon"
               className="h-8 w-8 cursor-pointer"
-              onClick={() => router.push(`/dashboard/content/${post.id}`)}
+              onClick={() => router.push(`/dashboard/content/${post?.id}`)}
             >
               <Eye className="size-4" />
               <span className="sr-only">View content</span>
             </Button>
-            <Button variant="ghost" onClick={() => onRemove(post.id)}>
+            <Button variant="ghost" onClick={() => onRemove(post?.id)}>
               <Trash2 className="size-4" />
               <span className="sr-only">Remove</span>
             </Button>

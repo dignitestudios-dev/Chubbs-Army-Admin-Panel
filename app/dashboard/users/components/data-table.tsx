@@ -214,18 +214,18 @@ export function DataTable({
                 </TableHeader>
                 <TableBody>
                   {users?.length ? (
-                    users.map((user) => (
-                      <TableRow key={user.id}>
+                    users?.map((user) => (
+                      <TableRow key={user?.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8">
                               <AvatarFallback className="text-xs font-medium">
-                                {user.name?.[0] || "" || "U"}
+                                {user?.name?.[0] || "" || "U"}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
                               <span className="font-medium">
-                                {user.name || "User"}
+                                {user?.name || "User"}
                               </span>
                             </div>
                           </div>
@@ -239,19 +239,19 @@ export function DataTable({
                         <TableCell>
                           <Badge
                             variant="secondary"
-                            className={getStatusColor(user.status)}
+                            className={getStatusColor(user?.status)}
                           >
-                            {user.status}
+                            {user?.status}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <span className="text-sm">
-                            {formatDate(user.joinedAt)}
+                            {formatDate(user?.joinedAt)}
                           </span>
                         </TableCell>
                         <TableCell>
                           <span className="text-sm font-medium">
-                            {user.petProfiles || 0}
+                            {user?.petProfiles || 0}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -261,7 +261,7 @@ export function DataTable({
                               size="icon"
                               className="h-8 w-8 cursor-pointer"
                               onClick={() =>
-                                router.push(`/dashboard/users/${user.id}`)
+                                router.push(`/dashboard/users/${user?.id}`)
                               }
                             >
                               <Eye className="size-4" />

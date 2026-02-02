@@ -18,24 +18,24 @@ export function StatCards({ statsData }: { statsData: any }) {
     return [
       {
         title: "Total Posts & Videos",
-        current: statsData.content.totalPosts,
+        current: statsData?.content?.totalPosts,
         icon: CreditCard,
       },
       {
         title: "Active Vendors",
-        current: statsData.ecosystem.activeVendors,
+        current: statsData?.ecosystem?.activeVendors,
         // growth: 32.8,
         icon: UserCheck,
       },
       {
         title: "Active Events Organizer",
-        current: statsData.ecosystem.activeOrganizers,
+        current: statsData?.ecosystem?.activeOrganizers,
         // growth: 15.8,
         icon: Toolbox,
       },
       {
         title: "Total Users",
-        current: `${statsData.users.total}`,
+        current: `${statsData?.users?.total}`,
         icon: UserCheck,
       },
     ];
@@ -43,7 +43,7 @@ export function StatCards({ statsData }: { statsData: any }) {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {performanceMetrics.map((metric, index) => (
+      {performanceMetrics?.map((metric, index) => (
         <Card key={index} className="border">
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between">
@@ -57,7 +57,7 @@ export function StatCards({ statsData }: { statsData: any }) {
                       : "border-red-200 bg-red-50 text-red-700",
                   )}
                 >
-                  {metric.growth >= 0 ? (
+                  {metric?.growth >= 0 ? (
                     <>
                       <TrendingUp className="me-1 size-3" />
                       {metric.growth >= 0 ? "+" : ""}
@@ -66,7 +66,7 @@ export function StatCards({ statsData }: { statsData: any }) {
                   ) : (
                     <>
                       <TrendingDown className="me-1 size-3" />
-                      {metric.growth}%
+                      {metric?.growth}%
                     </>
                   )}
                 </Badge>
@@ -75,12 +75,12 @@ export function StatCards({ statsData }: { statsData: any }) {
 
             <div className="space-y-2">
               <p className="text-muted-foreground text-sm font-medium">
-                {metric.title}
+                {metric?.title}
               </p>
-              <div className="text-2xl font-bold">{metric.current}</div>
+              <div className="text-2xl font-bold">{metric?.current}</div>
               {metric?.previous && (
                 <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                  <span>from {metric.previous}</span>
+                  <span>from {metric?.previous}</span>
                   <ArrowUpRight className="size-3" />
                 </div>
               )}

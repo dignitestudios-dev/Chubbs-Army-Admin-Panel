@@ -45,7 +45,7 @@ export function QuickAction({ statsData }: { statsData: StatsData | null }) {
     return [
       {
         title: "Flagged Content",
-        current: statsData.compliance?.reportedContentCount || 0,
+        current: statsData?.compliance?.reportedContentCount || 0,
         action: "Review Now",
         icon: Flag,
         style: "text-red-400",
@@ -53,7 +53,7 @@ export function QuickAction({ statsData }: { statsData: StatsData | null }) {
       },
       {
         title: "Pending Events",
-        current: statsData.event?.pendingEvents || 0,
+        current: statsData?.event?.pendingEvents || 0,
         action: "Review Now",
         style: "text-blue-400",
         icon: Hourglass,
@@ -72,11 +72,11 @@ export function QuickAction({ statsData }: { statsData: StatsData | null }) {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {performanceMetrics.map((metric, index) => (
+      {performanceMetrics?.map((metric, index) => (
         <Card key={index} className="border">
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between">
-              <metric.icon className={` size-6 ${metric.style}`} />
+              <metric.icon className={` size-6 ${metric?.style}`} />
               {metric?.growth && (
                 <Badge
                   variant="outline"
@@ -104,16 +104,16 @@ export function QuickAction({ statsData }: { statsData: StatsData | null }) {
 
             <div className="space-y-2">
               <p className="text-muted-foreground text-sm font-medium">
-                {metric.title}
+                {metric?.title}
               </p>
-              {metric.current === "Write Description" ? (
+              {metric?.current === "Write Description" ? (
                 <Input
                   placeholder="Write Description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
               ) : (
-                <div className="text-2xl font-bold">{metric.current}</div>
+                <div className="text-2xl font-bold">{metric?.current}</div>
               )}
               {metric?.action && (
                 <div className="text-muted-foreground flex items-center gap-2 text-sm">
@@ -122,15 +122,15 @@ export function QuickAction({ statsData }: { statsData: StatsData | null }) {
                       if (metric.title === "Send Announcement") {
                         sendAnnouncement();
                       } else {
-                        router.push(metric.route);
+                        router.push(metric?.route);
                       }
                     }}
-                    disabled={loading && metric.title === "Send Announcement"}
+                    disabled={loading && metric?.title === "Send Announcement"}
                     className="cursor-pointer p-2 border border-green-200 bg-green-50 text-green-700 rounded-3xl hover:bg-green-100"
                   >
-                    {loading && metric.title === "Send Announcement"
+                    {loading && metric?.title === "Send Announcement"
                       ? "Sending..."
-                      : metric.action}
+                      : metric?.action}
                   </Button>
                 </div>
               )}
