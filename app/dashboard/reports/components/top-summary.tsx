@@ -60,7 +60,7 @@ const TopSummary = ({ statsData }) => {
       },
       {
         title: "Total Revenue",
-        current: statsData?.marketplace?.revenue,
+        current: statsData?.marketplace?.revenue?.toFixed(2),
         icon: DollarSign,
       },
     ];

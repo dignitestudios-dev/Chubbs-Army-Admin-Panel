@@ -14,9 +14,10 @@ import {
 import EventDetailsModal from "./EventDetailsModal";
 import axios from "@/axios";
 import { AxiosError } from "axios";
-import { ErrorToast } from "@/components/Toaster";
+import { ErrorToast, SuccessToast } from "@/components/Toaster";
 import { useGlobalConfirm } from "@/components/GlobalConfirm";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { RejectReasonModal } from "./RejectReasonModal";
 
 type SectionType = "approval" | "monitoring" | "post";
 
@@ -54,6 +55,8 @@ export default function EventTable(props: Props) {
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [isRejectModalOpen, setRejectModalOpen] = useState(false);
+  const [eventIdToReject, setEventIdToReject] = useState<string | null>(null);
 
   const openEventModal = (event: EventItem) => {
     setSelectedEvent(event);
@@ -92,22 +95,26 @@ export default function EventTable(props: Props) {
     }
   };
 
-  const handleReject = async (eventId: string) => {
-    const confirmed = await confirm({
-      title: "Reject Event",
-      description: "Are you sure you want to reject this event?",
-      confirmLabel: "Reject",
-      cancelLabel: "Cancel",
-      destructive: true,
-    });
+  const handleRejectSubmit = async (reason: string) => {
+    // const confirmed = await confirm({
+    //   title: "Reject Event",
+    //   description: "Are you sure you want to reject this event?",
+    //   confirmLabel: "Reject",
+    //   cancelLabel: "Cancel",
+    //   destructive: true,
+    // });
 
-    if (!confirmed) return;
+    // if (!confirmed) return;
 
-    setLoadingId(eventId);
+    if (!reason || !eventIdToReject) {
+      return;
+    }
+
+    setLoadingId(eventIdToReject);
     try {
       const response = await axios.patch(
-        `/admin/publish/${eventId}`,
-        {},
+        `/admin/publish/${eventIdToReject}`,
+        { reason },
         {
           params: {
             status: "rejected",
@@ -115,7 +122,9 @@ export default function EventTable(props: Props) {
         },
       );
       if (response.status === 200) {
-        props.onReject?.(eventId);
+        props.onReject?.(eventIdToReject);
+        SuccessToast("Event Rejected");
+        handleCloseRejectModal();
       }
     } catch (error) {
       const err = error as AxiosError<{ message: string }>;
@@ -123,6 +132,16 @@ export default function EventTable(props: Props) {
     } finally {
       setLoadingId(null);
     }
+  };
+
+  const handleConfirmReject = (id: string) => {
+    setRejectModalOpen(true);
+    setEventIdToReject(id);
+  };
+
+  const handleCloseRejectModal = () => {
+    setRejectModalOpen(false);
+    setEventIdToReject(null);
   };
 
   if (section === "approval") {
@@ -205,7 +224,7 @@ export default function EventTable(props: Props) {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => handleReject(e.id)}
+                              onClick={() => handleConfirmReject(e.id)}
                               disabled={loadingId === e.id}
                             >
                               {loadingId === e.id ? (
@@ -238,6 +257,14 @@ export default function EventTable(props: Props) {
           onClose={() => setIsModalOpen(false)}
           event={selectedEvent}
         />
+        {isRejectModalOpen && (
+          <RejectReasonModal
+            open={isRejectModalOpen}
+            onClose={handleCloseRejectModal}
+            onSubmit={handleRejectSubmit}
+            loading={loadingId === eventIdToReject}
+          />
+        )}
       </>
     );
   }

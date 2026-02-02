@@ -16,7 +16,7 @@ import { CreateAdModal } from "./components/CreateModal";
 import { ViewAdModal } from "./components/ViewAdModal";
 import axios from "@/axios";
 import { AxiosError } from "axios";
-import { ErrorToast } from "@/components/Toaster";
+import { ErrorToast, SuccessToast } from "@/components/Toaster";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { Label } from "@/components/ui/label";
 import {
@@ -26,6 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useGlobalConfirm } from "@/components/GlobalConfirm";
+import { formatDate } from "@/lib/utils";
 interface AdMedia {
   fileUrl: string;
   fileName?: string;
@@ -42,6 +44,7 @@ type Ad = {
   title: string;
   description: string;
   media: AdMedia[];
+  isEnded: boolean;
 };
 
 export default function AdsManagement() {
@@ -49,6 +52,7 @@ export default function AdsManagement() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
+
   const [ads, setAds] = useState<Ad[]>([]);
 
   const [page, setPage] = useState(1);
@@ -68,26 +72,12 @@ export default function AdsManagement() {
     setIsViewModalOpen(true);
   };
 
-  const getStatusBadge = (status: Ad["status"]) => {
-    const variants = {
-      active: "default",
-      scheduled: "secondary",
-      expired: "destructive",
-    } as const;
-
+  const getStatusBadge = (isEnded: boolean) => {
     return (
-      <Badge variant={variants[status]} className="capitalize">
-        {status}
+      <Badge variant={isEnded ? "secondary" : "default"} className="capitalize">
+        {isEnded ? "Ended" : "Active"}
       </Badge>
     );
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   useEffect(() => {
@@ -113,6 +103,43 @@ export default function AdsManagement() {
 
     fetchStats();
   }, [update, page, limit]);
+
+  const confirm = useGlobalConfirm();
+
+  const handleEndCampaign = async (ad) => {
+    const ok = await confirm({
+      title: "End Campaign",
+      description: `Are you sure you want to end this campaign?`,
+      confirmLabel: "End Campaign",
+      cancelLabel: "Cancel",
+      destructive: true,
+    });
+
+    if (ok) {
+      onEndCampaign(ad);
+    }
+  };
+
+  const handleCampaign = async (ad: Ad) => {
+    handleEndCampaign(ad.id);
+  };
+
+  const onEndCampaign = async (adId?: string) => {
+    if (!adId) return;
+    setLoading(true);
+    try {
+      const response = await axios.delete(`admin/advertises/${adId}/end`);
+      if (response.status === 200) {
+        SuccessToast("Campaign ended successfully");
+        setUpdate((prev) => !prev);
+      }
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      ErrorToast(err.response?.data?.message ?? "Failed to end the campaign");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -166,6 +193,7 @@ export default function AdsManagement() {
                   <TableHead>Description</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>End Date</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -199,7 +227,9 @@ export default function AdsManagement() {
                         </div>
                       </TableCell>
                       <TableCell>{ad?.title || "--"}</TableCell>
-                      <TableCell>{ad?.description || "--"}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">
+                        {ad?.description || "--"}
+                      </TableCell>
 
                       {/* Start Date */}
                       <TableCell>
@@ -214,9 +244,11 @@ export default function AdsManagement() {
                           {formatDate(ad?.endDate)}
                         </span>
                       </TableCell>
+                      {/* Status */}
+                      <TableCell>{getStatusBadge(ad?.isEnded)}</TableCell>
 
                       {/* Actions */}
-                      <TableCell>
+                      <TableCell className="flex items-center">
                         <Button
                           variant="outline"
                           size="sm"
@@ -224,6 +256,14 @@ export default function AdsManagement() {
                         >
                           <Eye className="h-4 w-4 mr-2" />
                           View
+                        </Button>
+                        <Button
+                          onClick={() => handleCampaign(ad)}
+                          variant="destructive"
+                          size="sm"
+                          className=" ml-2"
+                        >
+                          End Campaign
                         </Button>
                       </TableCell>
                     </TableRow>

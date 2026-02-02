@@ -33,7 +33,10 @@ const exportReportingAnalyticsCSV = (data: any) => {
   // Totals Section
   rows.push(["REPORTING TOTALS"]);
   rows.push(["Reported Pets", data?.totals?.reportedPets?.toString() || "0"]);
-  rows.push(["Reported Content", data?.totals?.reportedContent?.toString() || "0"]);
+  rows.push([
+    "Reported Content",
+    data?.totals?.reportedContent?.toString() || "0",
+  ]);
   rows.push(["Blocked Users", data?.totals?.blockedUsers?.toString() || "0"]);
 
   // Calculate block rate
@@ -48,14 +51,31 @@ const exportReportingAnalyticsCSV = (data: any) => {
   rows.push(["Report Type", "Count"]);
   rows.push(["Pet Reports", data?.breakdown?.petReports?.toString() || "0"]);
   rows.push(["Post Reports", data?.breakdown?.postReports?.toString() || "0"]);
-  rows.push(["Post Comment Reports", data?.breakdown?.postCommentReports?.toString() || "0"]);
-  rows.push(["Event Reports", data?.breakdown?.eventReports?.toString() || "0"]);
-  rows.push(["Event Post Reports", data?.breakdown?.eventPostReports?.toString() || "0"]);
-  rows.push(["Event Post Comment Reports", data?.breakdown?.eventPostCommentReports?.toString() || "0"]);
-  rows.push(["Chat Room Reports", data?.breakdown?.chatRoomReports?.toString() || "0"]);
+  rows.push([
+    "Post Comment Reports",
+    data?.breakdown?.postCommentReports?.toString() || "0",
+  ]);
+  rows.push([
+    "Event Reports",
+    data?.breakdown?.eventReports?.toString() || "0",
+  ]);
+  rows.push([
+    "Event Post Reports",
+    data?.breakdown?.eventPostReports?.toString() || "0",
+  ]);
+  rows.push([
+    "Event Post Comment Reports",
+    data?.breakdown?.eventPostCommentReports?.toString() || "0",
+  ]);
+  rows.push([
+    "Chat Room Reports",
+    data?.breakdown?.chatRoomReports?.toString() || "0",
+  ]);
 
   // Create CSV content
-  const csvContent = rows.map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
+  const csvContent = rows
+    .map((row) => row.map((cell) => `"${cell}"`).join(","))
+    .join("\n");
 
   // Create and download file
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -63,7 +83,7 @@ const exportReportingAnalyticsCSV = (data: any) => {
 
   const link = document.createElement("a");
   link.href = url;
-  link.download = `reporting-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+  link.download = `reporting-analytics-${new Date().toISOString().split("T")[0]}.csv`;
   document.body.appendChild(link);
   link.click();
 
@@ -100,7 +120,7 @@ const ReportingAnalytics = () => {
   const [statsData, setStatsData] = useState<ReportingAnalyticsResponse | null>(
     null,
   );
-  console.log("🚀 ~ ReportingAnalytics ~ statsData:", statsData);
+
   const [loading, setLoading] = useState(true);
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
@@ -153,6 +173,13 @@ const ReportingAnalytics = () => {
 
     fetchStats();
   }, [fromDate, toDate, range, reportingStatus]);
+
+  const clearFilter = () => {
+    setFromDate("");
+    setToDate("");
+    setRange("");
+    setreportingStatus("");
+  };
 
   return (
     <Card>
@@ -253,6 +280,9 @@ const ReportingAnalytics = () => {
               </SelectContent>
             </Select>
           </div>
+          <Button variant="outline" onClick={clearFilter}>
+            Clear Filter
+          </Button>
         </div>
         {/* TOP STATS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

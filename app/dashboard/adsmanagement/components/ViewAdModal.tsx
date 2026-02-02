@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -40,14 +41,6 @@ export function ViewAdModal({ open, onClose, ad }: Props) {
 
   if (!ad) return null;
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   const nextImage = () => {
     setCurrentImageIndex((prev) =>
       prev === ad.media.length - 1 ? 0 : prev + 1,
@@ -64,8 +57,13 @@ export function ViewAdModal({ open, onClose, ad }: Props) {
     setCurrentImageIndex(index);
   };
 
+  const handleClose = () => {
+    setCurrentImageIndex(0);
+    onClose();
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Ad Details</DialogTitle>
@@ -73,18 +71,18 @@ export function ViewAdModal({ open, onClose, ad }: Props) {
 
         <div className="space-y-6">
           {/* Image Slider */}
-          {ad.media && ad.media.length > 0 && (
+          {ad?.media && ad?.media?.length > 0 && (
             <div className="relative">
               <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
                 <img
-                  src={ad.media[currentImageIndex].fileUrl}
+                  src={ad?.media[currentImageIndex]?.fileUrl}
                   alt={`Ad image ${currentImageIndex + 1}`}
                   className="w-full h-full object-cover"
                 />
               </div>
 
               {/* Navigation Buttons */}
-              {ad.media.length > 1 && (
+              {ad?.media?.length > 1 && (
                 <>
                   <button
                     onClick={prevImage}
@@ -101,7 +99,7 @@ export function ViewAdModal({ open, onClose, ad }: Props) {
 
                   {/* Dots Indicator */}
                   <div className="flex justify-center mt-4 space-x-2">
-                    {ad.media.map((_, index) => (
+                    {ad?.media?.map((_, index) => (
                       <button
                         key={index}
                         onClick={() => goToImage(index)}
@@ -122,30 +120,32 @@ export function ViewAdModal({ open, onClose, ad }: Props) {
           <div className="space-y-4">
             <div>
               <Label className="text-base font-semibold">Title</Label>
-              <p className="mt-1 text-gray-700">{ad.title}</p>
+              <p className="mt-1 text-gray-700">{ad?.title}</p>
             </div>
 
             <div>
               <Label className="text-base font-semibold">Description</Label>
-              <p className="mt-1 text-gray-700">{ad.description}</p>
+              <p className="mt-1 text-gray-700">{ad?.description}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label className="text-base font-semibold">Start Date</Label>
-                <p className="mt-1 text-gray-700">{formatDate(ad.startDate)}</p>
+                <p className="mt-1 text-gray-700">
+                  {formatDate(ad?.startDate)}
+                </p>
               </div>
 
               <div>
                 <Label className="text-base font-semibold">End Date</Label>
-                <p className="mt-1 text-gray-700">{formatDate(ad.endDate)}</p>
+                <p className="mt-1 text-gray-700">{formatDate(ad?.endDate)}</p>
               </div>
             </div>
           </div>
 
           {/* Close Button */}
           <div className="flex justify-end pt-4">
-            <Button onClick={onClose} variant="outline">
+            <Button onClick={handleClose} variant="outline">
               Close
             </Button>
           </div>

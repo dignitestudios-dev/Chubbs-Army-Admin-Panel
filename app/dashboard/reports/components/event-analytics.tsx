@@ -21,7 +21,23 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
-const exportEventAnalyticsCSV = (data: any) => {
+interface EventAnalyticsData {
+  events: {
+    upcoming: number;
+    past: number;
+    total: number;
+  };
+  engagement: {
+    rsvps: number;
+    attendees: number;
+    attendanceRate: number;
+  };
+  revenue: {
+    ticketSales: number;
+  };
+}
+
+const exportEventAnalyticsCSV = (data: EventAnalyticsData) => {
   if (!data) return;
 
   const rows: string[][] = [];
@@ -77,7 +93,7 @@ const exportEventAnalyticsCSV = (data: any) => {
   URL.revokeObjectURL(url);
 };
 
-const EventAnalytics = ({ eventAnalytics }) => {
+const EventAnalytics = () => {
   const [loading, setLoading] = useState(false);
   const [statsData, setStatsData] = useState(null);
 
@@ -99,8 +115,8 @@ const EventAnalytics = ({ eventAnalytics }) => {
         let params = {};
         if (fromDate && toDate) {
           params = {
-            fromDate: toISOStart(fromDate),
-            toDate: toISOEnd(toDate),
+            from: toISOStart(fromDate),
+            to: toISOEnd(toDate),
           };
         } else if (range) {
           params = { range };
@@ -121,6 +137,11 @@ const EventAnalytics = ({ eventAnalytics }) => {
 
     fetchStats();
   }, [fromDate, toDate, range]);
+  const clearFilter = () => {
+    setFromDate("");
+    setToDate("");
+    setRange("");
+  };
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -179,6 +200,9 @@ const EventAnalytics = ({ eventAnalytics }) => {
               if (e.target.value) setRange("");
             }}
           />
+          <Button variant="outline" onClick={clearFilter}>
+            Clear Filter
+          </Button>
           {/* <div className="space-y-2">
             <Label htmlFor="role-filter" className="text-sm font-medium">
               Vendor Status

@@ -67,8 +67,8 @@ export function formatDate(dateString: string | null | undefined): string {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "—";
 
-    return date.toLocaleDateString("en-GB"); // DD/MM/YYYY
-  } catch (error) {
+    return date.toLocaleDateString("en-US"); // MM/DD/YYYY
+  } catch {
     return "—";
   }
 }

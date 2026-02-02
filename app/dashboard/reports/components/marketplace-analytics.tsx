@@ -101,7 +101,7 @@ const exportMarketplaceAnalyticsCSV = (data: any) => {
   URL.revokeObjectURL(url);
 };
 
-const MarketplaceAnalytics = ({ marketplaceAnalytics }) => {
+const MarketplaceAnalytics = () => {
   const [marketAnalytics, setMarketAnalytics] = useState(null);
 
   const [loading, setLoading] = useState(true);
@@ -125,8 +125,8 @@ const MarketplaceAnalytics = ({ marketplaceAnalytics }) => {
         let params: any = {};
 
         if (fromDate && toDate) {
-          params.fromDate = toISOStart(fromDate);
-          params.toDate = toISOEnd(toDate);
+          params.from = toISOStart(fromDate);
+          params.to = toISOEnd(toDate);
         }
 
         if (range) {
@@ -157,7 +157,15 @@ const MarketplaceAnalytics = ({ marketplaceAnalytics }) => {
 
     fetchStats();
   }, [fromDate, toDate, range, vendorStatus, orderStatus]);
-  console.log(marketAnalytics, "marketAnalytics==>Test");
+
+  const clearFilter = () => {
+    setFromDate("");
+    setToDate("");
+    setRange("");
+    setVendorStatus("");
+    setOrderStatus("");
+  };
+
   const handleFilterChange = (filterType: string, value: string) => {
     // onFilterChange(filterType, value);
   };
@@ -225,6 +233,10 @@ const MarketplaceAnalytics = ({ marketplaceAnalytics }) => {
               if (e.target.value) setRange("");
             }}
           />
+
+          <Button variant="outline" onClick={clearFilter}>
+            Clear Filter
+          </Button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
           <div className="p-4 rounded-lg border bg-gradient-to-br from-amber-50 to-orange-50">

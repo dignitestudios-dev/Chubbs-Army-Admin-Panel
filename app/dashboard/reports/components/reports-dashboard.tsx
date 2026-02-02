@@ -101,36 +101,8 @@ type ReportingAnalytics = {
   blockedUsers: number;
 };
 
-// Mock data
-const growth: GrowthData[] = [
-  { date: "2026-01-01", users: 120 },
-  { date: "2026-01-02", users: 150 },
-  { date: "2026-01-03", users: 170 },
-  { date: "2026-01-15", users: 220 },
-  { date: "2026-01-30", users: 285 },
-];
-
-function toCSV(rows: any[], columns: string[]) {
-  const header = columns.join(",");
-  const lines = rows.map((r) =>
-    columns.map((c) => JSON.stringify(r[c] ?? "")).join(","),
-  );
-  return [header, ...lines].join("\n");
-}
-
 export default function ReportsDashboard() {
   const [activeTab, setActiveTab] = useState<string>("user");
-
-  const revenue: Revenue = {
-    marketplace: 12450.5,
-    subscriptions: 3490.0,
-    ads: 870.0,
-  };
-
-  const userAnalytics: UserAnalytics = {
-    totalUsers: 285,
-    growthTrends: growth,
-  };
 
   const contentAnalytics: ContentAnalytics = {
     totalPosts: 1240,
@@ -141,62 +113,7 @@ export default function ReportsDashboard() {
     },
   };
 
-  const marketplaceAnalytics: MarketplaceAnalytics = {
-    totalVendors: 45,
-    totalProducts: 320,
-    orders: {
-      pending: 28,
-      completed: 412,
-      cancelled: 15,
-    },
-    revenue: {
-      byProduct: 8200.5,
-      byService: 4250.0,
-      marketplace: 12450.5,
-      subscriptions: 3490.0,
-    },
-    vendorRatings: [
-      { vendorName: "Pet Paradise", rating: 4.8 },
-      { vendorName: "Doggy Delights", rating: 4.6 },
-      { vendorName: "Feline Friends", rating: 4.9 },
-    ],
-  };
-
-  const eventAnalytics: EventAnalytics = {
-    totalEvents: {
-      upcoming: 12,
-      past: 35,
-    },
-    rsvpVsAttendance: {
-      rsvps: 450,
-      attendees: 387,
-    },
-    eventRevenue: 5680.0,
-  };
-
-  const reportingAnalytics: ReportingAnalytics = {
-    reportedUsers: 23,
-    reportedContent: 67,
-    blockedUsers: 8,
-  };
-
-  const exportCSV = (
-    rows: any[],
-    columns: string[],
-    filename = "report.csv",
-  ) => {
-    const csv = toCSV(rows, columns);
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   // FOR top stats data fetching
-
   const [statsData, setStatsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fromDate, setFromDate] = useState<string>("");
@@ -237,21 +154,61 @@ export default function ReportsDashboard() {
       }
     };
 
-    fetchStats();
-  }, [fromDate, toDate, range]);
+    if (activeTab === "user") {
+      fetchStats();
+    }
+  }, [fromDate, toDate, range, activeTab]);
+
+  const clearFilter = () => {
+    setFromDate("");
+    setToDate("");
+    setRange("");
+  };
 
   return (
     <div className="space-y-6 ">
       {/* Top Summary Cards */}
+      {/* Date Range and Export Controls */}
+      {activeTab === "user" && (
+        <div className="grid grid-cols-5 items-center gap-2 ">
+          <Input
+            type="date"
+            value={fromDate}
+            max={today}
+            onChange={(e) => {
+              const value = e.target.value;
+              setFromDate(value);
+
+              // reset toDate if it becomes invalid
+              if (toDate && value && toDate < value) {
+                setToDate("");
+              }
+
+              if (value) setRange("");
+            }}
+          />
+
+          <Input
+            type="date"
+            min={fromDate || undefined}
+            max={today}
+            value={toDate}
+            onChange={(e) => {
+              setToDate(e.target.value);
+              if (e.target.value) setRange("");
+            }}
+          />
+          <Button variant="outline" onClick={clearFilter}>
+            Clear Filter
+          </Button>
+        </div>
+      )}
+
       <div>
         <TopSummary statsData={statsData} />
       </div>
 
-      {/* Date Range and Export Controls */}
-      {/* <div className="flex items-center gap-2 flex-wrap">
-        <Input type="date" className="w-auto" />
-        <Input type="date" className="w-auto" />
-        <Select>
+      {/* <Select>
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Preset" />
           </SelectTrigger>
@@ -265,8 +222,7 @@ export default function ReportsDashboard() {
           onClick={() => exportCSV(growth, ["date", "users"], "growth.csv")}
         >
           Export CSV
-        </Button>
-      </div> */}
+        </Button> */}
 
       {/* Tabs Section */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -290,17 +246,17 @@ export default function ReportsDashboard() {
 
         {/* Marketplace Analytics Tab */}
         <TabsContent value="marketplace" className="space-y-4">
-          <MarketplaceAnalytics marketplaceAnalytics={marketplaceAnalytics} />
+          <MarketplaceAnalytics />
         </TabsContent>
 
         {/* Event Analytics Tab */}
         <TabsContent value="event" className="space-y-4">
-          <EventAnalytics eventAnalytics={eventAnalytics} />
+          <EventAnalytics />
         </TabsContent>
 
         {/* Reporting Analytics Tab */}
         <TabsContent value="reporting" className="space-y-4">
-          <ReportingAnalytics  />
+          <ReportingAnalytics />
         </TabsContent>
       </Tabs>
     </div>

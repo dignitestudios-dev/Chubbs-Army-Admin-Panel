@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { EditChallengeModal } from "./components/EditChallengeModal";
+import { formatDate } from "@/lib/utils";
 
 type Challenge = {
   id: string;
@@ -179,7 +180,7 @@ export default function ContentPage() {
                   <Plus className="size-4 mr-2" />
                   Create Challenge
                 </Button>
-                <div className="mt-6 space-y-4 overflow-hidden h-[400px]">
+                <div className="mt-6 space-y-4 overflow-hidden min-h-[400px]">
                   <h3 className="font-medium mb-2">Challenges</h3>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -222,11 +223,14 @@ export default function ContentPage() {
                           <div className="text-xs text-muted-foreground space-y-1 mb-4">
                             <div>
                               <span className="font-medium">Start:</span>{" "}
-                              {new Date(c.createdAt).toLocaleDateString()}
+                              {/* {new Date(c.createdAt).toLocaleDateString()}
+                               */}
+                              {formatDate(c.createdAt)}
                             </div>
                             <div>
                               <span className="font-medium">End:</span>{" "}
-                              {new Date(c.endDate).toLocaleDateString()}
+                              {/* {new Date(c.endDate).toLocaleDateString()} */}
+                              {formatDate(c.endDate)}
                             </div>
                           </div>
 

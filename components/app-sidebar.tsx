@@ -12,6 +12,7 @@ import {
   MessageSquareWarning,
   Megaphone,
   Store,
+  Tv,
 } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
@@ -109,7 +110,7 @@ const data = {
         {
           title: "Ads Banner",
           url: "/dashboard/adsmanagement",
-          icon: Megaphone,
+          icon: Tv,
         },
         // {
         //   title: "System Settings",
