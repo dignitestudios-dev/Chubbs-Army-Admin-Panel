@@ -135,10 +135,11 @@ export default function ReportedContentTable({ data, creator }) {
         </TableHeader>
 
         <TableBody>
-          {data.map((item) => (
-            <TableRow key={item.id}>
-              {/* Content Preview */}
-              {/* <TableCell className="flex items-center gap-3">
+          {data?.length ? (
+            data.map((item) => (
+              <TableRow key={item.id}>
+                {/* Content Preview */}
+                {/* <TableCell className="flex items-center gap-3">
                 <div className="relative w-14 h-14 rounded-md overflow-hidden border">
                   <Image
                     src={item.thumbnail}
@@ -152,30 +153,30 @@ export default function ReportedContentTable({ data, creator }) {
                 </Badge>
               </TableCell> */}
 
-              {/* Owner */}
-              <TableCell className="font-medium">@{creator}</TableCell>
+                {/* Owner */}
+                <TableCell className="font-medium">@{creator}</TableCell>
 
-              {/* Report Reason */}
-              <TableCell>
-                <Badge variant="outline">{item?.reason}</Badge>
-              </TableCell>
+                {/* Report Reason */}
+                <TableCell>
+                  <Badge variant="outline">{item?.reason}</Badge>
+                </TableCell>
 
-              {/* Reported By */}
-              <TableCell>@{item?.pet?.petName}</TableCell>
+                {/* Reported By */}
+                <TableCell>@{item?.pet?.petName}</TableCell>
 
-              {/* Report Count */}
-              {/* <TableCell>
+                {/* Report Count */}
+                {/* <TableCell>
                 <Badge variant="destructive">{item.reportCount}</Badge>
               </TableCell> */}
 
-              {/* Actions */}
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button size="sm" onClick={() => openApprove(item)}>
-                    Reject
-                  </Button>
+                {/* Actions */}
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button size="sm" onClick={() => openApprove(item)}>
+                      Reject
+                    </Button>
 
-                  {/* <Button
+                    {/* <Button
                     size="sm"
                     variant="destructive"
                     onClick={() => openRemove(item)}
@@ -183,7 +184,7 @@ export default function ReportedContentTable({ data, creator }) {
                     Remove
                   </Button> */}
 
-                  {/* <Button
+                    {/* <Button
                     size="sm"
                     variant="outline"
                     onClick={() => openWarn(item)}
@@ -191,17 +192,24 @@ export default function ReportedContentTable({ data, creator }) {
                     Warn
                   </Button> */}
 
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => openSuspend(item)}
-                  >
-                    Ban User
-                  </Button>
-                </div>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => openSuspend(item)}
+                    >
+                      Ban User
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={6} className="h-24 text-center">
+                No results.
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
       {modalType && (

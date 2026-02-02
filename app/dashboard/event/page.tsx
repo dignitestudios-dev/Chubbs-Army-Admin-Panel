@@ -19,6 +19,7 @@ import {
 
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 
 interface EventData {
   id: string;
@@ -50,7 +51,6 @@ interface EventData {
 export default function EventPage() {
   const router = useRouter();
   const [events, setEvents] = useState<EventData[]>([]);
-  console.log("🚀 ~ EventPage ~ events:", events);
   const [loading, setLoading] = useState(false);
   const [update, setUpdate] = useState(false);
   const [page, setPage] = useState(1);
@@ -155,93 +155,98 @@ export default function EventPage() {
         </Tabs>
       </div>
 
-      <section className="space-y-3">
-        {selectedSection === "approval" && (
-          <>
-            <h2 className="text-lg font-semibold">Event Approval Workflow</h2>
-            <EventTable
-              section="approval"
-              events={events.map((e) => ({
-                id: e.id,
-                title: e.title,
-                organizer: `${e?.organizer?.firstName} ${e?.organizer?.lastName}`,
-                date: formatDate(e?.eventDate),
-                location: e?.placeName,
-                status:
-                  e?.status === "DRAFT"
-                    ? "submitted"
-                    : e?.status === "ACTIVE"
-                      ? "approved"
-                      : "rejected",
-                rsvps: 0, // not in data
-                ticketsSold: 0,
-                attendance: 0,
-                reports: 0,
-                ratingAvg: 0,
-                feedbackCount: 0,
-              }))}
-              onApprove={approve}
-              onReject={reject}
-              onEdit={edit}
-              onRemove={remove}
-            />
-          </>
-        )}
+      {loading ? (
+        <TableSkeleton />
+      ) : (
+        <section className="space-y-3">
+          {selectedSection === "approval" && (
+            <>
+              <h2 className="text-lg font-semibold">Event Approval Workflow</h2>
+              <EventTable
+                section="approval"
+                events={events.map((e) => ({
+                  id: e.id,
+                  title: e.title,
+                  organizer: `${e?.organizer?.firstName} ${e?.organizer?.lastName}`,
+                  date: formatDate(e?.eventDate),
+                  location: e?.placeName,
+                  status:
+                    e?.status === "DRAFT"
+                      ? "submitted"
+                      : e?.status === "ACTIVE"
+                        ? "approved"
+                        : "rejected",
+                  rsvps: 0, // not in data
+                  ticketsSold: 0,
+                  attendance: 0,
+                  reports: 0,
+                  ratingAvg: 0,
+                  feedbackCount: 0,
+                }))}
+                onApprove={approve}
+                onReject={reject}
+                onEdit={edit}
+                onRemove={remove}
+              />
+            </>
+          )}
 
-        {selectedSection === "monitoring" && (
-          <>
-            <h2 className="text-lg font-semibold">Event Monitoring</h2>
-            <EventTable
-              section="monitoring"
-              events={events.map((e) => ({
-                id: e?.id,
-                title: e?.title,
-                organizer: `${e?.organizer?.firstName} ${e?.organizer?.lastName}`,
-                status: "approved",
-                rsvps: e?.currentRSVP,
-                ticketsSold: 0,
-                attendance: e?.participant?.length ?? 0,
-                reports: e?._count?.eventreport ?? 0,
-                ratingAvg: e?.averageRating,
-                feedbackCount: 0,
-              }))}
-              onViewMetrics={viewMetrics}
-            />
-          </>
-        )}
+          {selectedSection === "monitoring" && (
+            <>
+              <h2 className="text-lg font-semibold">Event Monitoring</h2>
+              <EventTable
+                section="monitoring"
+                events={events.map((e) => ({
+                  id: e?.id,
+                  title: e?.title,
+                  organizer: `${e?.organizer?.firstName} ${e?.organizer?.lastName}`,
+                  status: "approved",
+                  rsvps: e?.currentRSVP,
+                  ticketsSold: 0,
+                  attendance: e?.participant?.length ?? 0,
+                  reports: e?._count?.eventreport ?? 0,
+                  ratingAvg: e?.averageRating,
+                  feedbackCount: 0,
+                }))}
+                onViewMetrics={viewMetrics}
+              />
+            </>
+          )}
 
-        {selectedSection === "post" && (
-          <>
-            <h2 className="text-lg font-semibold">Post-Event Management</h2>
-            <EventTable
-              section="post"
-              events={events?.map((e) => ({
-                id: e?.id,
-                title: e?.title,
-                organizer: `${e?.organizer?.firstName} ${e?.organizer?.lastName}`,
-                date: formatDate(e?.eventDate),
-                location: e?.placeName,
-                status:
-                  e?.status === "DRAFT"
-                    ? "submitted"
-                    : e?.status === "ACTIVE"
-                      ? "approved"
-                      : "rejected",
-                rsvps: 0,
-                ticketsSold: 0,
-                attendance: e?.participant?.length ?? 0,
-                reports: e?._count?.eventreport ?? 0,
-                ratingAvg: e?.averageRating,
-                feedbackCount: e?.EventReview?.length ?? 0,
-              }))}
-              onEdit={edit}
-              onRemoveContent={removeContent}
-              onRemove={remove}
-              onViewMetrics={viewPostEvent}
-            />
-          </>
-        )}
-      </section>
+          {selectedSection === "post" && (
+            <>
+              <h2 className="text-lg font-semibold">Post-Event Management</h2>
+              <EventTable
+                section="post"
+                events={events?.map((e) => ({
+                  id: e?.id,
+                  title: e?.title,
+                  organizer: `${e?.organizer?.firstName} ${e?.organizer?.lastName}`,
+                  date: formatDate(e?.eventDate),
+                  location: e?.placeName,
+                  status:
+                    e?.status === "DRAFT"
+                      ? "submitted"
+                      : e?.status === "ACTIVE"
+                        ? "approved"
+                        : "rejected",
+                  rsvps: 0,
+                  ticketsSold: 0,
+                  attendance: e?.participant?.length ?? 0,
+                  reports: e?._count?.eventreport ?? 0,
+                  ratingAvg: e?.averageRating,
+                  feedbackCount: e?.EventReview?.length ?? 0,
+                }))}
+                onEdit={edit}
+                onRemoveContent={removeContent}
+                onRemove={remove}
+                onViewMetrics={viewPostEvent}
+              />
+            </>
+          )}
+        </section>
+      )}
+
       <div className="flex items-center justify-between space-x-2 py-4">
         <div className="flex items-center space-x-2">
           <Label htmlFor="page-size" className="text-sm font-medium">
