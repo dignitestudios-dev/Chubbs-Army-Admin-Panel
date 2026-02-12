@@ -38,11 +38,18 @@ const createAdSchema = Yup.object().shape({
     .max(10, "Maximum 10 images allowed")
     .required("Images are required"),
   startDate: Yup.date()
-    .min(
-      new Date(new Date().toISOString().slice(0, 10)),
-      "Start date cannot be in the past",
-    )
-    .required("Start date is required"),
+    .required("Start date is required")
+    .test("not-in-past", "Start date cannot be in the past", function (value) {
+      if (!value) return false;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const selectedDate = new Date(value);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      return selectedDate >= today;
+    }),
   endDate: Yup.date()
     .min(Yup.ref("startDate"), "End date must be after start date")
     .required("End date is required"),
