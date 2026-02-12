@@ -257,14 +257,17 @@ export default function AdsManagement() {
                           <Eye className="h-4 w-4 mr-2" />
                           View
                         </Button>
-                        <Button
-                          onClick={() => handleCampaign(ad)}
-                          variant="destructive"
-                          size="sm"
-                          className=" ml-2"
-                        >
-                          End Campaign
-                        </Button>
+                        {!ad?.isEnded && (
+                          <Button
+                            onClick={() => handleCampaign(ad)}
+                            disabled={ad?.isEnded}
+                            variant="destructive"
+                            size="sm"
+                            className=" ml-2"
+                          >
+                            End Campaign
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
