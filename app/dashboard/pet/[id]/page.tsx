@@ -4,14 +4,13 @@ import React, { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 import { useGlobalConfirm } from "@/components/GlobalConfirm";
 import { Trash2, Plus, Check, X, Eye } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import axios from "@/axios";
 import { AxiosError } from "axios";
-import { ErrorToast } from "@/components/Toaster";
+import { ErrorToast, SuccessToast } from "@/components/Toaster";
 import { calculateAge } from "@/lib/utils";
 type PostType = "reels" | "challenges" | "lost-found";
 
@@ -35,6 +34,7 @@ export default function PetDetailPage({
 
   const router = useRouter();
   const confirm = useGlobalConfirm();
+  const [update, setUpdate] = useState(false);
 
   const [activeTab, setActiveTab] = useState<PostType>("reels");
 
@@ -47,8 +47,10 @@ export default function PetDetailPage({
       cancelLabel: "Cancel",
       destructive: true,
     });
-    console.log("🚀 ~ handleRemovePost ~ ok:", ok);
-    // if (ok) setPosts((p) => p.filter((x) => x.id !== postId));
+
+    if (ok) {
+      handleDeletePost(postId);
+    }
   }
 
   const [petData, setPetData] = useState(null);
@@ -77,7 +79,24 @@ export default function PetDetailPage({
     if (id) {
       fetchPetDetails();
     }
-  }, [id]);
+  }, [id, update]);
+
+  const handleDeletePost = async (postId) => {
+    try {
+      setLoading(true);
+      const response = await axios.delete(`/admin/users/content/${postId}`);
+      console.log("🚀 ~ handleDeletePost ~ response:", response);
+      if (response.status === 200) {
+        SuccessToast("Post Deleted");
+        setUpdate((prev) => !prev);
+      }
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      ErrorToast(err.response?.data?.message ?? "Failed to delete post");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>

@@ -53,7 +53,6 @@ export function CreateChallengeModal({
   selectedTab,
   challenges,
 }: Props) {
-  console.log("🚀 ~ CreateChallengeModal ~ selectedTab:", selectedTab);
   const [loading, setLoading] = useState(false);
 
   const {
