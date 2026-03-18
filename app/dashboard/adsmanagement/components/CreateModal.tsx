@@ -35,7 +35,7 @@ interface Props {
 const createAdSchema = Yup.object().shape({
   images: Yup.array()
     .min(1, "At least one image is required")
-    .max(10, "Maximum 10 images allowed")
+    .max(1, "Only 1 image is allowed")
     .required("Images are required"),
   startDate: Yup.date()
     .required("Start date is required")
@@ -130,8 +130,8 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
     const currentImages = values.images;
 
     // Check if adding new files would exceed limit
-    if (currentImages.length + files.length > 10) {
-      ErrorToast("Maximum 10 images allowed");
+    if (currentImages.length + files.length > 1) {
+      ErrorToast("Only 1 image is allowed");
       return;
     }
 
@@ -202,7 +202,7 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
               <Label htmlFor="images" className="text-base font-semibold">
                 Ad Images{" "}
                 <span className="text-sm text-gray-500 font-normal">
-                  (Max 10 images)
+                  (Only 1 image)
                 </span>
               </Label>
 
@@ -265,7 +265,7 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
                       </p>
                       {values.images.length > 0 && (
                         <p className="text-xs text-indigo-600 font-semibold mt-2">
-                          {values.images.length} / 10 images uploaded
+                          {values.images.length} / 1 image uploaded
                         </p>
                       )}
                     </div>

@@ -39,7 +39,6 @@ export default function PetDetailPage({
   const [activeTab, setActiveTab] = useState<PostType>("reels");
 
   async function handleRemovePost(postId: string) {
-    console.log("🚀 ~ handleRemovePost ~ postId:", postId);
     const ok = await confirm({
       title: "Remove post",
       description: "This will permanently remove the post for this pet.",
@@ -85,7 +84,7 @@ export default function PetDetailPage({
     try {
       setLoading(true);
       const response = await axios.delete(`/admin/users/content/${postId}`);
-      console.log("🚀 ~ handleDeletePost ~ response:", response);
+
       if (response.status === 200) {
         SuccessToast("Post Deleted");
         setUpdate((prev) => !prev);

@@ -54,6 +54,7 @@ export default function AdsManagement() {
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
 
   const [ads, setAds] = useState<Ad[]>([]);
+  console.log("🚀 ~ AdsManagement ~ ads:", ads);
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState("10");
@@ -162,6 +163,8 @@ export default function AdsManagement() {
     setPage(1);
   };
 
+  const endedAdsCount = ads?.filter((ad) => ad.isEnded === false).length || 0;
+
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -174,7 +177,11 @@ export default function AdsManagement() {
             </p>
           </div>
 
-          <Button onClick={() => setIsCreateModalOpen(true)} size="lg">
+          <Button
+            disabled={endedAdsCount >= 10}
+            onClick={() => setIsCreateModalOpen(true)}
+            size="lg"
+          >
             <Plus className="mr-2 h-5 w-5" />
             Create Ad
           </Button>
