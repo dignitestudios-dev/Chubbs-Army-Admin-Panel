@@ -88,7 +88,6 @@ export function CreateChallengeModal({
       if (values.image) {
         formData.append("image", values.image);
       }
-
       if (
         selectedTab === "command_update" &&
         challenges &&
