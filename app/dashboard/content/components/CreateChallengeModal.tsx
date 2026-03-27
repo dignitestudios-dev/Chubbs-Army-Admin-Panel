@@ -75,12 +75,20 @@ export function CreateChallengeModal({
       formData.append("description", values.description);
       formData.append("endDate", new Date(values.endDate).toISOString());
       formData.append("type", selectedTab);
+
+      // Get current timezone offset like +05:00
+      const offset = -new Date().getTimezoneOffset();
+      const sign = offset >= 0 ? "+" : "-";
+      const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, "0");
+      const minutes = String(Math.abs(offset) % 60).padStart(2, "0");
+      const timezone = `${sign}${hours}:${minutes}`;
+
+      formData.append("timezone", timezone);
+
       if (values.image) {
         formData.append("image", values.image);
       }
 
-      // If creating a command_update and there are existing challenges,
-      // don't call the API and inform the user.
       if (
         selectedTab === "command_update" &&
         challenges &&
@@ -91,6 +99,8 @@ export function CreateChallengeModal({
       }
 
       try {
+        console.log("Timezone:---", timezone);
+
         setLoading(true);
 
         const response = await axios.post("/admin/createChallenge", formData, {
@@ -100,14 +110,12 @@ export function CreateChallengeModal({
         });
 
         if (response.status === 201) {
-          // Handle success
           SuccessToast("Challenge created successfully!");
           onSuccess();
           onClose();
         }
       } catch (error) {
         const err = error as AxiosError<{ message: string }>;
-
         ErrorToast(err.response?.data?.message ?? "Failed to create challenge");
       } finally {
         setLoading(false);
@@ -154,7 +162,7 @@ export function CreateChallengeModal({
                 <Textarea
                   id="description"
                   name="description"
-                  placeholder="Enter challenge description"
+                  placeholder="Enter Description"
                   value={values.description}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -169,7 +177,7 @@ export function CreateChallengeModal({
                 <Label htmlFor="endDate">End Date</Label>
                 <Input
                   id="endDate"
-                  type="date"
+                  type="datetime-local"
                   name="endDate"
                   value={values.endDate}
                   onChange={handleChange}
