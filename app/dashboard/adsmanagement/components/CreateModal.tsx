@@ -187,7 +187,7 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
               <Textarea
                 id="description"
                 name="description"
-                placeholder="Enter challenge description"
+                placeholder="Enter Description"
                 value={values.description}
                 onChange={handleChange}
                 onBlur={handleBlur}
