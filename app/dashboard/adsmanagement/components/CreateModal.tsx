@@ -127,31 +127,28 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.currentTarget.files || []);
-    const currentImages = values.images;
 
-    // Check if adding new files would exceed limit
-    if (currentImages.length + files.length > 1) {
-      ErrorToast("Only 1 image is allowed");
-      return;
+    // Only take the first file since only 1 image is allowed
+    const file = files[0];
+    if (!file) return;
+
+    // Revoke previous preview URL if exists
+    if (imagePreviews.length > 0) {
+      URL.revokeObjectURL(imagePreviews[0]);
     }
 
-    // Create preview URLs
-    const newPreviews = files.map((file) => URL.createObjectURL(file));
-    setImagePreviews([...imagePreviews, ...newPreviews]);
+    const newPreview = URL.createObjectURL(file);
+    setImagePreviews([newPreview]);
+    setFieldValue("images", [file]);
 
-    // Update formik values
-    setFieldValue("images", [...currentImages, ...files]);
+    // Reset input so same file can be re-selected after removal
+    event.currentTarget.value = "";
   };
 
   const removeImage = (index: number) => {
-    const newImages = values.images.filter((_, i) => i !== index);
-    const newPreviews = imagePreviews.filter((_, i) => i !== index);
-
-    // Revoke the object URL to free memory
     URL.revokeObjectURL(imagePreviews[index]);
-
-    setFieldValue("images", newImages);
-    setImagePreviews(newPreviews);
+    setFieldValue("images", []);
+    setImagePreviews([]);
   };
 
   return (
@@ -197,54 +194,43 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
                 <p className="text-red-600 text-sm">{errors.description}</p>
               )}
             </div>
+
             {/* Image Upload Section */}
             <div className="space-y-3">
               <Label htmlFor="images" className="text-base font-semibold">
-                Ad Images{" "}
+                Ad Image{" "}
                 <span className="text-sm text-gray-500 font-normal">
-                  (Only 1 image)
+                  (Only 1 image allowed)
                 </span>
               </Label>
 
-              {/* Image Grid Display */}
+              {/* Image Preview */}
               {imagePreviews.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg border-2 border-dashed border-gray-200">
-                  {imagePreviews.map((preview, index) => (
-                    <div
-                      key={index}
-                      className="relative group aspect-square rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-200"
-                    >
-                      <img
-                        src={preview}
-                        alt={`Preview ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      {/* <div className="absolute  duration-200" /> */}
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 transform hover:scale-110"
-                        aria-label="Remove image"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                      <div className="absolute bottom-2 left-2 bg-white bg-opacity-90 px-2 py-1 rounded text-xs font-semibold text-gray-700">
-                        {index + 1}
-                      </div>
-                    </div>
-                  ))}
+                <div className="relative w-40 h-40 rounded-lg overflow-hidden shadow-md group">
+                  <img
+                    src={imagePreviews[0]}
+                    alt="Ad Preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(0)}
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 transform hover:scale-110"
+                    aria-label="Remove image"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
               )}
 
-              {/* Upload Button */}
-              {values.images.length < 10 && (
+              {/* Upload Card — only shown when no image is uploaded */}
+              {values.images.length === 0 && (
                 <div className="relative">
                   <Input
                     id="images"
                     type="file"
                     name="images"
                     accept="image/jpeg,image/png,image/jpg,image/webp"
-                    multiple
                     onChange={handleImageUpload}
                     onBlur={handleBlur}
                     className="hidden"
@@ -255,19 +241,14 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
                   >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <div className="w-12 h-12 mb-3 bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
-                        <ImagePlus className="h-6 w-6 " />
+                        <ImagePlus className="h-6 w-6" />
                       </div>
                       <p className="mb-1 text-sm font-semibold text-gray-700">
                         <span>Click to upload</span>
                       </p>
                       <p className="text-xs text-gray-500">
-                        PNG, JPG, JPEG or WEBP (MAX. 10 images)
+                        PNG, JPG, JPEG or WEBP (MAX. 1 image)
                       </p>
-                      {values.images.length > 0 && (
-                        <p className="text-xs text-indigo-600 font-semibold mt-2">
-                          {values.images.length} / 1 image uploaded
-                        </p>
-                      )}
                     </div>
                   </label>
                 </div>
@@ -277,7 +258,7 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
                 <p className="text-red-600 text-sm font-medium">
                   {typeof errors.images === "string"
                     ? errors.images
-                    : "Please upload at least one image"}
+                    : "Please upload an image"}
                 </p>
               )}
             </div>
@@ -381,4 +362,4 @@ export function CreateAdModal({ open, onClose, onSuccess }: Props) {
       </DialogContent>
     </Dialog>
   );
-}
+} 
